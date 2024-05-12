@@ -1,0 +1,52 @@
+- name: Start the redis instance in the shawarma server
+  hosts: rediservers
+  tasks:
+   - name: Ensure redis-server is installed
+     ansible.builtin.apt:
+      name: redis-server
+      state: present
+   - name: Copy the redis.conf file into /etc/redis
+     ansible.builtin.copy:
+     args:
+       src: redis.conf
+       dest: /etc/redis/redis.conf
+       owner: redis
+       mode: 777
+   - name: Restart the redis-server service to ensure it is running and apply configuration
+     ansible.builtin.service:
+      name: redis-server
+      state: restarted
+
+- name: Run the reddy webservers
+  hosts: webservers
+  tasks:
+   - name: Ping my hosts
+     ansible.builtin.ping:
+
+   - name: Print message
+     ansible.builtin.debug:
+      msg: Hello world
+
+   - name: Ensure /etc/reddy folder exists
+     ansible.builtin.file:
+     args:
+       dest: /etc/reddy
+       state: directory
+
+   - name: Copy reddy executable
+     ansible.builtin.copy:
+      src: ../server/target/release/reddy
+      dest: /etc/reddy/reddy
+      mode: 777
+
+   - name: Create .env file
+     ansible.builtin.shell: echo "REDIS_HOST=redis://192.168.236.109" > .env
+     args:
+       chdir: /etc/reddy
+       creates: .env
+
+   - name: Run the server with nohup
+     ansible.builtin.shell: nohup /etc/reddy/reddy &
+     args:
+       chdir: /etc/reddy
+
