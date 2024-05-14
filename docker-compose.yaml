@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  
+  ansible-container:
+    build:
+      context: ./docker-containers/ansible-container
+      dockerfile: Dockerfile
+    networks:
+      - common
+    tty: true
+    container_name: ansible-container
+    volumes:
+      - .:/ansible
+      - ssh-keys:/root/.ssh
+
+  ubuntu-container1:
+    build:
+      context: ./docker-containers/ubuntu-container
+      dockerfile: Dockerfile
+    networks:
+      - common
+    tty: true
+    container_name: ubuntu-container1
+    volumes:
+      - ssh-keys:/root/.ssh
+
+  ubuntu-container2:
+    build:
+      context: ./docker-containers/ubuntu-container
+      dockerfile: Dockerfile
+    networks:
+      - common
+    tty: true
+    container_name: ubuntu-container2
+    volumes:
+      - ssh-keys:/root/.ssh
+
+networks:
+  common:
+    driver: bridge
+
+volumes:
+  ssh-keys:
