@@ -1,0 +1,56 @@
+---
+- name: Start the redis instance
+  gather_facts: no
+  hosts: redis-server
+  
+  tasks:
+
+   - name: Ensure redis service is installed
+     ansible.builtin.package:
+      name: redis
+      state: present
+    
+   - name: Copy the redis.conf file into /etc/redis
+     ansible.builtin.copy:
+     args:
+       src: ./files/redis.conf
+       dest: /etc/redis/redis.conf
+       owner: redis
+       mode: 777
+      
+   - name: Restart the redis service to ensure it is running and apply configuration
+     ansible.builtin.service:
+      name: redis
+      state: restarted
+
+- name: Run reddy web-server
+  gather_facts: no
+  hosts: web-server
+
+  tasks:
+
+   - name: Ensure /etc/reddy folder exists
+     ansible.builtin.file:
+     args:
+       dest: /etc/reddy
+       state: directory
+
+   - name: Copy reddy executable
+     ansible.builtin.copy:
+      src: ./reddy/target/debug/reddy
+      dest: /etc/reddy/reddy
+      mode: 777
+
+  # TOFIX: this is not working because no IP is assigned.
+   - name: Create .env file
+     ansible.builtin.template:
+        src: ./templates/env.j2
+        dest: /etc/reddy/.env
+     vars:
+        redis_host: redis://{{ hostvars['ubuntu-container3']['ansible_host'] }}:6379
+  
+  # TODO: This is NOT idempotent.
+   - name: Run the server with nohup
+     ansible.builtin.shell: nohup /etc/reddy/reddy &
+     args:
+       chdir: /etc/reddy
