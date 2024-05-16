@@ -1,0 +1,6 @@
+[Unit]
+Description=Reddy
+
+[Service]
+ExecStart=/etc/reddy/reddy
+Restart=always
