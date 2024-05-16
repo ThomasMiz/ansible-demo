@@ -1,7 +1,7 @@
 ---
 - name: Start the redis instance
   gather_facts: no
-  hosts: redis-server
+  hosts: rediserver
   
   tasks:
 
@@ -23,9 +23,9 @@
       name: redis
       state: restarted
 
-- name: Run reddy web-server
+- name: Run reddy webserver
   gather_facts: no
-  hosts: web-server
+  hosts: webserver
 
   tasks:
 
@@ -41,15 +41,14 @@
       dest: /etc/reddy/reddy
       mode: 777
 
-  # TOFIX: this is not working because no IP is assigned.
    - name: Create .env file
      ansible.builtin.template:
         src: ./templates/env.j2
         dest: /etc/reddy/.env
      vars:
-        redis_host: redis://{{ hostvars['ubuntu-container3']['ansible_host'] }}:6379
+        redis_hostname: ubuntu-container3
   
-  # TODO: This is NOT idempotent.
+  # TODO: This is NOT idempotent. See open issue
    - name: Run the server with nohup
      ansible.builtin.shell: nohup /etc/reddy/reddy &
      args:

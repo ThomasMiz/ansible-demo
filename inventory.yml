@@ -17,7 +17,7 @@ all:
   children:
   
     # Subgroup for webserver
-    web-server:
+    webserver:
 
       # List hosts belonging to the webserver group
       hosts:
@@ -25,7 +25,7 @@ all:
         ubuntu-container2:
       
     # Subgroup for Redis servers
-    redis-server:
+    rediserver:
       
       # List hosts belonging to the redis group
       hosts:
