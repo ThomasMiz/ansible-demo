@@ -1,0 +1,25 @@
+---
+   - name: Ensure /etc/reddy folder exists
+     ansible.builtin.file:
+     args:
+       dest: /etc/reddy
+       state: directory
+
+   - name: Copy reddy executable
+     ansible.builtin.copy:
+      src: ./reddy/target/debug/reddy
+      dest: /etc/reddy/reddy
+      mode: 777
+
+   - name: Create .env file
+     ansible.builtin.template:
+        src: ./templates/env.j2
+        dest: /etc/reddy/.env
+     vars:
+        redis_hostname: ubuntu-container3
+
+  # TODO: This is NOT idempotent. See open issue
+   - name: Run the server with nohup
+     ansible.builtin.shell: nohup /etc/reddy/reddy &
+     args:
+       chdir: /etc/reddy

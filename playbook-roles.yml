@@ -1,0 +1,12 @@
+---
+- name: Start the redis instance
+  gather_facts: no
+  hosts: rediserver
+  roles :
+    - redisserver
+
+- name: Run reddy webserver
+  gather_facts: no
+  hosts: webserver
+  roles :
+    - webserver
