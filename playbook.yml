@@ -9,16 +9,18 @@
      ansible.builtin.package:
       name: redis-server
       state: present
+     notify: Restart redis-server service
     
    - name: Copy the redis.conf file into /etc/redis
      ansible.builtin.copy:
-     args:
        src: ./files/redis.conf
        dest: /etc/redis/redis.conf
        owner: redis
        mode: 777
-      
-   - name: Restart the redis-server service to ensure it is running and apply configuration
+     notify: Restart redis-server service
+  
+  handlers:
+   - name: Restart redis-server service
      ansible.builtin.service:
       name: redis-server
       state: restarted
@@ -52,6 +54,11 @@
      ansible.builtin.copy:
       src: ./files/reddy.service
       dest: /etc/systemd/system/reddy.service
+     notify:
+        - Reload systemd
+        - Restart reddy service
+  
+  handlers:
 
    - name: Reload systemd
      ansible.builtin.systemd:
