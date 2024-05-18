@@ -5,9 +5,9 @@
   
   tasks:
 
-   - name: Ensure redis service is installed
+   - name: Ensure redis-server service is installed
      ansible.builtin.package:
-      name: redis
+      name: redis-server
       state: present
     
    - name: Copy the redis.conf file into /etc/redis
@@ -18,9 +18,9 @@
        owner: redis
        mode: 777
       
-   - name: Restart the redis service to ensure it is running and apply configuration
+   - name: Restart the redis-server service to ensure it is running and apply configuration
      ansible.builtin.service:
-      name: redis
+      name: redis-server
       state: restarted
 
 - name: Run reddy webserver
@@ -48,8 +48,16 @@
      vars:
         redis_hostname: ubuntu-container3
   
-  # TODO: This is NOT idempotent. See open issue
-   - name: Run the server with nohup
-     ansible.builtin.shell: nohup /etc/reddy/reddy &
-     args:
-       chdir: /etc/reddy
+   - name: Copy systemd service file
+     ansible.builtin.copy:
+      src: ./files/reddy.service
+      dest: /etc/systemd/system/reddy.service
+
+   - name: Reload systemd
+     ansible.builtin.systemd:
+      daemon_reload: yes
+
+   - name: Restart reddy service
+     ansible.builtin.service:
+      name: reddy
+      state: restarted
