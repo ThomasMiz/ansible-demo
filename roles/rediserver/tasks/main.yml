@@ -1,0 +1,16 @@
+---
+# tasks file for rediserver
+
+- name: Ensure redis-server service is installed
+  ansible.builtin.package:
+    name: redis-server
+    state: present
+  notify: Restart redis-server service
+
+- name: Copy the redis.conf file into /etc/redis
+  ansible.builtin.copy:
+    src: ./files/redis.conf
+    dest: /etc/redis/redis.conf
+    owner: redis
+    mode: '0777'
+  notify: Restart redis-server service

@@ -1,0 +1,7 @@
+[Unit]
+Description=Reddy
+
+[Service]
+WorkingDirectory=/etc/reddy
+ExecStart=nohup ./reddy &
+Restart=always

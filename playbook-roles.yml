@@ -3,7 +3,7 @@
   gather_facts: no
   hosts: rediserver
   roles :
-    - redisserver
+    - rediserver
 
 - name: Run reddy webserver
   gather_facts: no

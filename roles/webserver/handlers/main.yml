@@ -1,0 +1,11 @@
+---
+# handlers file for webserver
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Restart reddy service
+  ansible.builtin.service:
+    name: reddy
+    state: restarted

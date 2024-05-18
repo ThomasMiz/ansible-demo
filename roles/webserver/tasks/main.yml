@@ -1,25 +1,42 @@
 ---
-   - name: Ensure /etc/reddy folder exists
-     ansible.builtin.file:
-     args:
-       dest: /etc/reddy
-       state: directory
+# tasks file for webserver
 
-   - name: Copy reddy executable
-     ansible.builtin.copy:
-      src: ./reddy/target/debug/reddy
-      dest: /etc/reddy/reddy
-      mode: 777
+- name: Ensure /etc/reddy folder exists
+  ansible.builtin.file:
+    path: /etc/reddy
+    state: directory
 
-   - name: Create .env file
-     ansible.builtin.template:
-        src: ./templates/env.j2
-        dest: /etc/reddy/.env
-     vars:
-        redis_hostname: ubuntu-container3
+- name: Copy reddy executable
+  ansible.builtin.copy:
+    src: ./reddy/target/debug/reddy
+    dest: /etc/reddy/reddy
+    mode: '0777'
 
-  # TODO: This is NOT idempotent. See open issue
-   - name: Run the server with nohup
-     ansible.builtin.shell: nohup /etc/reddy/reddy &
-     args:
-       chdir: /etc/reddy
+- name: Create .env file
+  ansible.builtin.template:
+    src: ./templates/env.j2
+    dest: /etc/reddy/.env
+
+- name: Copy systemd service file
+  ansible.builtin.copy:
+    src: ./files/reddy.service
+    dest: /etc/systemd/system/reddy.service
+  notify:
+    - Reload systemd
+    - Restart reddy service
+
+# This commented section is another way of achieving the same as above.
+# The difference is that this is a method of modularizing into different .yml files 
+# related tasks to avoid having a very extensive .yml file.
+
+# - name: Include tasks for reddy webserver setup
+#   include_tasks: ensure_directory.yml
+
+# - name: Include tasks for copying executable
+#   include_tasks: copy_executable.yml
+
+# - name: Include tasks for creating .env file
+#   include_tasks: create_env_file.yml
+
+# - name: Include tasks for copying systemd service file
+#   include_tasks: copy_service_file.yml
