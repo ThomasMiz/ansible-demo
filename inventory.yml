@@ -13,6 +13,9 @@ all:
 
     ubuntu-container3:
       ansible_host: ubuntu-container3
+    
+    loadbalancer-container4:
+      ansible_host: loadbalancer-container4
 
   children:
   
@@ -30,3 +33,10 @@ all:
       # List hosts belonging to the redis group
       hosts:
         ubuntu-container3:
+    
+    # Subgroup for nginx loadbalancer
+    loadbalancer:
+      
+      # List hosts belonging to the loadbalancer group
+      hosts:
+        loadbalancer-container4:

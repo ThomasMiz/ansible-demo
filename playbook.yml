@@ -68,3 +68,44 @@
      ansible.builtin.service:
       name: reddy
       state: restarted
+
+- name: Config nginx as a load balancer
+  hosts: loadbalancer
+  tasks:
+  - name: install web service
+    ansible.builtin.package:
+      name: nginx
+      state: present
+      update_cache: yes
+    notify: start nginx
+
+  - name: delete default config
+    ansible.builtin.file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: reload nginx
+
+  - name: Configure NGINX
+    ansible.builtin.template:
+      src: nginx/nginx_load_balancer.conf.j2
+      dest: /etc/nginx/sites-available/load_balancer.conf
+    notify: reload nginx
+
+  - name: Enable NGINX load balancer site
+    ansible.builtin.file:
+      src: /etc/nginx/sites-available/load_balancer.conf
+      dest: /etc/nginx/sites-enabled/load_balancer.conf
+      state: link
+    notify: reload nginx
+
+  handlers:
+  - name: start nginx
+    ansible.builtin.service:
+      name: nginx
+      state: started
+      enabled: yes
+
+  - name: reload nginx
+    ansible.builtin.service:
+      name: nginx
+      state: reloaded
