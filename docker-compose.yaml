@@ -51,6 +51,18 @@ services:
     volumes:
       - ssh-keys:/root/.ssh
 
+  loadbalancer-container4:
+    build:
+      context: ./docker-containers/ubuntu-container
+      dockerfile: Dockerfile
+    privileged: true
+    networks:
+      - common
+    tty: true
+    container_name: loadbalancer-container4
+    volumes:
+      - ssh-keys:/root/.ssh
+
 networks:
   common:
     driver: bridge
