@@ -1,71 +1,40 @@
 
-# Docker commands
+<h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
+<a name="logo" href="https://docs.ansible.com/ansible/latest/index.html"><img align="center" src="https://logos-download.com/wp-content/uploads/2016/10/Ansible_logo.png" alt="ANSIBLE" style="width:50%;height:100%"/></a>
+  <br /><br /><strong>ANSIBLE DEMO</strong>
+</h1>
 
-In the root of the project, run docker compose.
+<div align="center">
+  <img src="https://img.shields.io/badge/Ansible-000000?style=for-the-badge&logo=ansible&logoColor=white" alt="ansible">
+  <img src="https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white" alt="redis">
+  <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="docker">
+  <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" alt="rust">
+  <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="nginx">
+</div>
 
-```bash
-$ docker-compose up -d
-```
+---
 
-Connect to the ansible-container
-```bash
-$ docker exec -it ansible-container /bin/bash
-```
+## Introduction
 
-Test connection. Add as many host you want in the inventory.ini file
-```bash
-root@f1fe1a8fdfd7:/ansible$ ansible -m ping all
-ubuntu-container1 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-ubuntu-container2 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-```
+[Ansible](https://docs.ansible.com/ansible/latest/index.html) is an open-source IT automation tool that simplifies configuration management, application deployment, and infrastructure orchestration. It uses a simple declarative language based on YAML to describe the desired system configuration and automate complex tasks efficiently. Ansible is highly scalable and can manage everything from small single-server setups to large enterprise environments with thousands of nodes. Being agentless (unlike [Puppet](https://www.puppet.com/)), it doesn't require additional software on the target nodes, making deployment easy and reducing operational complexity.
 
-There is a testing-playbook that installs postgresql in a remote node if you want to try it
-```bash
-root@f1fe1a8fdfd7:/ansible$ ansible-playbook testing-playbook.yml
+## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) Table of contents 
+- [Introduction](#introduction)
+- [ Table of contents](#-table-of-contents)
+- [ Reddy](#-reddy)
+- [ Docker installation](#-docker-installation)
 
-PLAY [Install PostgreSQL] *********************************************************************************************************************************************
+## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy) Reddy
 
-TASK [Gathering Facts] *************************************************************************************************************************************************
-ok: [ubuntu-container2]
-ok: [ubuntu-container1]
+Reddy is the system we will base our Ansible demonstration on. It consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
 
-TASK [Install PostgreSQL] ***********************************************************************************************************************************************
-changed: [ubuntu-container1]
-changed: [ubuntu-container2]
+The system was set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and, ideally, add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (id_rsa.pub) of the Ansible container is present in all containers to ensure seamless connections between them and enable task execution.
 
-TASK [Verify PostgreSQL installation] **********************************************************************************************************************************
-changed: [ubuntu-container2]
-changed: [ubuntu-container1]
+(INSERTAR IMAGEN DE LA TOPOLOGIA)
 
-TASK [Display a successful installation message if PostgreSQL is installed] ********************************************************************************************
-ok: [ubuntu-container1] => {
-    "msg": "PostgreSQL installed successfully. Version: psql (PostgreSQL) 16.2 (Ubuntu 16.2-1ubuntu4)"
-}
-ok: [ubuntu-container2] => {
-    "msg": "PostgreSQL installed successfully. Version: psql (PostgreSQL) 16.2 (Ubuntu 16.2-1ubuntu4)"
-}
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-PLAY RECAP *************************************************************************************************************************************************************
-ubuntu-container1          : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-ubuntu-container2          : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-```
-
-# Running reddy
-
-Now let's run the project:
-
+## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) Docker installation
 In the root of the project, run docker compose (this will take a while).
 
 ```bash
@@ -86,3 +55,5 @@ Run the playbook:
 ```bash
 root@f1fe1a8fdfd7:/ansible$ ansible-playbook playbook.yml
 ```
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
