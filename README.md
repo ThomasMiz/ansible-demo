@@ -18,13 +18,13 @@
 
 [Ansible](https://docs.ansible.com/ansible/latest/index.html) is an open-source IT automation tool that simplifies configuration management, application deployment, and infrastructure orchestration. It uses a simple declarative language based on YAML to describe the desired system configuration and automate complex tasks efficiently. Ansible is highly scalable and can manage everything from small single-server setups to large enterprise environments with thousands of nodes. Being agentless (unlike [Puppet](https://www.puppet.com/)), it doesn't require additional software on the target nodes, making deployment easy and reducing operational complexity.
 
-## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) Table of contents 
+## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) 
 - [Introduction](#introduction)
-- [ Table of contents](#-table-of-contents)
-- [ Reddy](#-reddy)
-- [ Docker installation](#-docker-installation)
+- [Table of contents](#table-of-contents)
+- [Reddy ](#reddy-)
+- [Docker installation ](#docker-installation-)
 
-## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy) Reddy
+## Reddy [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy)
 
 Reddy is the system we will base our Ansible demonstration on. It consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
 
@@ -34,7 +34,7 @@ The system was set up using [Docker Compose](docker-compose.yaml), allowing us t
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) Docker installation
+## Docker installation [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) 
 In the root of the project, run docker compose (this will take a while).
 
 ```bash
