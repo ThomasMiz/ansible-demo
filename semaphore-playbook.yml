@@ -40,7 +40,7 @@
      ansible.builtin.copy:
       src: ./reddy/target/debug/reddy
       dest: /etc/reddy/reddy
-      remote_src: false
+      remote_src: true
       mode: 777
 
    - name: Create .env file
