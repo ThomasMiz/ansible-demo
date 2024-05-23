@@ -62,6 +62,45 @@ services:
     container_name: loadbalancer-container4
     volumes:
       - ssh-keys:/root/.ssh
+  mysql:
+    image: mysql:8.0
+    hostname: mysql
+    networks:
+      - common
+    volumes:
+      - semaphore-mysql:/var/lib/mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_DATABASE: semaphore
+      MYSQL_USER: semaphore
+      MYSQL_PASSWORD: semaphore
+
+  semaphore:
+    ports:
+      - 3000:3000
+    image: semaphoreui/semaphore:latest
+    privileged: true
+    networks:
+      - common
+    environment:
+      SEMAPHORE_DB_USER: semaphore
+      SEMAPHORE_DB_PASS: semaphore
+      SEMAPHORE_DB_HOST: mysql
+      SEMAPHORE_DB_PORT: 3306
+      SEMAPHORE_DB_DIALECT: mysql
+      SEMAPHORE_DB: semaphore
+      SEMAPHORE_PLAYBOOK_PATH:
+      SEMAPHORE_ADMIN_PASSWORD: changeme
+      SEMAPHORE_ADMIN_NAME: admin
+      SEMAPHORE_ADMIN_EMAIL: admin@localhost
+      SEMAPHORE_ADMIN: admin
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
+      TZ: UTC
+    depends_on:
+      - mysql # for postgres, change to: postgres
+    volumes:
+      - ssh-keys:/home/semaphore/.ssh
+
 
 networks:
   common:
@@ -69,3 +108,4 @@ networks:
 
 volumes:
   ssh-keys:
+  semaphore-mysql:

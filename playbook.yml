@@ -28,7 +28,6 @@
 - name: Run reddy webserver
   gather_facts: no
   hosts: webserver
-
   tasks:
 
    - name: Ensure /etc/reddy folder exists
