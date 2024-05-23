@@ -17,7 +17,6 @@
        dest: /etc/redis/redis.conf
        owner: redis
        mode: 777
-       remote_src: false
      notify: Restart redis-server service
 
   handlers:
@@ -41,6 +40,7 @@
      ansible.builtin.copy:
       src: ./reddy/target/debug/reddy
       dest: /etc/reddy/reddy
+      remote_src: false
       mode: 777
 
    - name: Create .env file
