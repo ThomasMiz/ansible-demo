@@ -57,3 +57,47 @@ root@f1fe1a8fdfd7:/ansible$ ansible-playbook playbook.yml
 ```
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Using Semaphore (GUI)
+
+Semaphore is available at 
+```bash
+http://localhost:3000/
+username = admin
+password = changeme
+```
+
+### 1) Add SSH Key
+
+In ansible-container run the following command to get the key
+```bash
+root@23fa96265dde:/ansible# cat /root/.ssh/id_rsa
+```
+
+In semaphore go to KeyStore
+Add new key :
+    -Type : SSH-Key 
+    -Username: root 
+    -Passphrase : None
+    - Copy paste private key
+
+
+### 2) Create Inventory
+
+Go to Inventory section and create Inventory :
+    - UserCrendtials : Select the Key imported at previous step
+    - type : Static yaml -> copy paste content of static.yml
+
+### 3) Create Repo
+
+Go to Repository section and create repo
+    - Branche : main
+    - Access-Key : None 
+
+### 4) Create Task 
+
+Go to Tasks section and create task , specify the inventory , repo created previsouly and add the playbook you want to run 
+
+### 5) Execute Task 
+
+
