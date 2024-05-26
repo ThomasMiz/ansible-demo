@@ -8,8 +8,7 @@
    - name: Ensure redis-server service is installed
      ansible.builtin.package:
       name: redis-server
-      state: present
-     notify: Restart redis-server service
+      state: present    
     
    - name: Copy the redis.conf file into /etc/redis
      ansible.builtin.copy:
@@ -91,7 +90,7 @@
       dest: /etc/nginx/sites-available/load_balancer.conf
     notify: reload nginx
 
-  - name: Enable NGINX load balancer site
+  - name: Enable NGINX loadbalancer site
     ansible.builtin.file:
       src: /etc/nginx/sites-available/load_balancer.conf
       dest: /etc/nginx/sites-enabled/load_balancer.conf
@@ -110,10 +109,9 @@
       name: nginx
       state: reloaded
 
-- name: Define firewall rules for nginx_server
+- name: Define firewall rules for loadbalancer
   gather_facts: no
   hosts: loadbalancer
-  become: yes
   tasks:
     - name: Install UFW
       ansible.builtin.package:
@@ -130,7 +128,7 @@
         state: enabled
         policy: deny
 
-    - name: Allow SSH from specified host to nginx_server (ansible-container and semaphore-container)
+    - name: Allow SSH from specified host to loadbalancer (ansible-container and semaphore-container)
       ansible.builtin.ufw:
         rule: allow
         port: ssh
@@ -139,10 +137,50 @@
         - 172.16.238.240
         - 172.16.238.241
 
-    - name: Allow HTTP and HTTPS from nginx_server
+    - name: Allow HTTP and HTTPS from loadbalancer
       ansible.builtin.ufw:
         rule: allow
         port: "{{ item }}"
       loop:
         - http
         - https
+
+- name: Define firewall rules for rust servers
+  hosts: webserver
+  tasks:
+    - name: Install UFW
+      ansible.builtin.package:
+        name: ufw
+        state: present
+
+    - name: Gather facts from load-balancer
+      ansible.builtin.setup:
+        gather_subset: all
+      delegate_to: load-balancer
+      run_once: true
+      register: load_balancer_facts
+
+    - name: Start UFW service
+      ansible.builtin.service:
+        name: ufw
+        state: started
+
+    - name: Block everything and enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: deny
+
+    - name: Allow SSH from specified host to webserver (ansible-container and semaphore-container)
+      ansible.builtin.ufw:
+        rule: allow
+        port: ssh
+        from_ip: "{{ item }}"
+      loop:
+        - 172.16.238.240
+        - 172.16.238.241
+
+    - name: Allow requests for port 3000 from load balancers only
+      ansible.builtin.ufw:
+        rule: allow
+        port: 3000
+        from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"

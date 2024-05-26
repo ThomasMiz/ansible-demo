@@ -5,7 +5,6 @@
   ansible.builtin.package:
     name: redis-server
     state: present
-  notify: Restart redis-server service
 
 - name: Copy the redis.conf file into /etc/redis
   ansible.builtin.copy:
