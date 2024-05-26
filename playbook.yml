@@ -69,6 +69,7 @@
       state: restarted
 
 - name: Config nginx as a load balancer
+  gather_facts: no
   hosts: loadbalancer
   tasks:
   - name: install web service
@@ -108,3 +109,40 @@
     ansible.builtin.service:
       name: nginx
       state: reloaded
+
+- name: Define firewall rules for nginx_server
+  gather_facts: no
+  hosts: loadbalancer
+  become: yes
+  tasks:
+    - name: Install UFW
+      ansible.builtin.package:
+        name: ufw
+        state: present
+
+    - name: Start UFW service
+      ansible.builtin.service:
+        name: ufw
+        state: started
+
+    - name: Block everything and enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: deny
+
+    - name: Allow SSH from specified host to nginx_server (ansible-container and semaphore-container)
+      ansible.builtin.ufw:
+        rule: allow
+        port: ssh
+        from_ip: "{{ item }}"
+      loop:
+        - 172.16.238.240
+        - 172.16.238.241
+
+    - name: Allow HTTP and HTTPS from nginx_server
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - http
+        - https

@@ -20,7 +20,8 @@ services:
       dockerfile: Dockerfile
     privileged: true
     networks:
-      - common
+      common:
+        ipv4_address: 172.16.238.241
     tty: true
     container_name: ansible-container
     depends_on:
@@ -99,8 +100,10 @@ services:
       - 3000:3000
     image: semaphoreui/semaphore:latest
     privileged: true
+    container_name: semaphore-container
     networks:
-      - common
+      common:
+        ipv4_address: 172.16.238.240
     environment:
       SEMAPHORE_DB_USER: semaphore
       SEMAPHORE_DB_PASS: semaphore
@@ -125,7 +128,9 @@ services:
 
 networks:
   common:
-    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.238.0/24
 
 volumes:
   ssh-keys:
