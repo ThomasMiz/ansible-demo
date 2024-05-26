@@ -86,7 +86,7 @@
 
   - name: Configure NGINX
     ansible.builtin.template:
-      src: nginx/nginx_load_balancer.conf.j2
+      src: templates/nginx_load_balancer.conf.j2
       dest: /etc/nginx/sites-available/load_balancer.conf
     notify: reload nginx
 
