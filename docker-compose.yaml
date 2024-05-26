@@ -74,6 +74,8 @@ services:
     privileged: true
     networks:
       - common
+    ports:
+      - 8080:80
     tty: true
     container_name: load-balancer
     volumes:
