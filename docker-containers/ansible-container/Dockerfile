@@ -9,8 +9,7 @@ RUN apt-get update \
 RUN mkdir -p /root/.ssh \
     && ssh-keygen -t rsa -b 4096 -N '' -f /root/.ssh/id_rsa \
     && cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys \
-    && chmod 644 /root/.ssh/authorized_keys \
-    && chmod 644 /root/.ssh/id_rsa \
+    && chmod 600 /root/.ssh/authorized_keys \
     && mkdir -p ~/.ssh && echo "Host *" > ~/.ssh/config \
     && echo " StrictHostKeyChecking no" >> ~/.ssh/config
 
