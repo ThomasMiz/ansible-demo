@@ -21,10 +21,18 @@
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) 
 - [Introduction](#introduction)
 - [Table of contents](#table-of-contents)
-- [Reddy ](#reddy-)
+- [Reddy](#reddy)
 - [Docker installation ](#docker-installation-)
+- [Inventory ](#inventory-)
+  - [File structure](#file-structure)
+    - [Host infomation](#host-infomation)
+    - [Variables](#variables)
+    - [Logical subgroups](#logical-subgroups)
+- [Jinja 2 templates](#jinja-2-templates)
+- [Semaphore UI ](#semaphore-ui-)
+- [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 
-## Reddy [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy)
+## Reddy[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy)
 
 Reddy is the system we will base our Ansible demonstration on. It consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
 
@@ -41,63 +49,113 @@ In the root of the project, run docker compose (this will take a while).
 $ docker-compose up -d
 ```
 
-Connect to the ansible-container
-```bash
-$ docker exec -it ansible-container /bin/bash
-```
-
-Now build reddy executable file with the following command:
-```bash
-root@f1fe1a8fdfd7:/ansible$ cd reddy && cargo build && cd ..
-```
-
-Run the playbook:
-```bash
-root@f1fe1a8fdfd7:/ansible$ ansible-playbook playbook.yml
-```
+With this command, we are bringing up the aforementioned topology. However, before demonstrating it, before making any demonstration, we will provide an explanation of some concepts.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Using Semaphore (GUI)
+## Inventory [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
+In this section, we will explain the structure and purpose of the Ansible inventory file used in the project. An Ansible inventory file is a YAML or INI file that defines the hosts and groups of hosts upon which Ansible commands, modules, and playbooks operate. The inventory file for this project can be found [here](inventory.yml).
 
-Semaphore is available at 
+### File structure
+
+#### Host infomation
+- The `hosts` subsection lists individual hosts with their connection information
+- Each host is defined with a name and connection details
+- The `ansible_host` variable specifies the address Ansible should use to connect to the host
+
+#### Variables 
+- Although not shown in this specific inventory file, the `vars` subsection can be used to define variables that apply to all hosts within the `all` group.
+
+#### Logical subgroups
+  The `children` subsection groups hosts into logical subgroups, making it easier to manage and apply tasks to related hosts collectively. There are 3 groups in the inventory file:
+
+- **Webserver Group**
+  - The `webserver` group contains hosts related to web servers.
+  - Hosts in this group:
+    - `web-server1`
+    - `web-server2`
+
+- **Rediserver Group**
+  - The `rediserver` group contains hosts related to Redis servers.
+  - Hosts in this group:
+    - `redis-server1`
+
+- **Loadbalancer Group**
+  - The `loadbalancer` group contains hosts related to load balancers.
+  - Hosts in this group:
+    - `load-balancer`
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Jinja 2 templates
+
+Ansible uses Jinja 2 templating to enable dynamic expressions and access variables and facts (parametrization).  This avoids hardcoding values inside templates
+
+Usually templates are stores in the ```templates``` module. For example, you can create a template for a configuration file, then deploy that configuration file to multiple environments and supply the correct data (IP Address, hostname, version) for each environment.
+
+All templating happens on the ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja 2 is only required in the control node). It also limits the amount of data Anislbe passes to the target machine.
+It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Semaphore UI [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#semaphore) 
+
+[Semaphore UI](https://www.semui.co/) is an open-source project offering a responsive web UI for running Ansible playbooks. It simplifies workflow management by allowing users to efficiently execute tasks, organize playbooks, and manage environments, inventories, repositories, and access keys. With its mobile-friendly interface, Semaphore provides flexibility in task management, enabling users to schedule playbook runs, access detailed logs, delegate tasks, and receive notifications.
+
+## Using Semaphore to run a playbook
+
+Let's run a playbook using Semaphore. The service its listening in http://localhost:3000/. 
+
+
+<div align="center">
+    <img src="readme-utils/semaphore-images/login.png" alt="Semaphore Login">
+</div>
+
+Login with the following credentials:
+
 ```bash
-http://localhost:3000/
 username = admin
-password = changeme
+password = admin
 ```
 
-### 1) Add SSH Key
+Now create a new project called `ansible-demo` like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project">
+</div>
 
-In ansible-container run the following command to get the key
+Create a repository using the link of the repo like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-repo.gif" alt="Create Repo">
+</div>
+
+Create ssh keys using the private key of the ansible-container. To get it:
 ```bash
-root@23fa96265dde:/ansible# cat /root/.ssh/id_rsa
+$ docker exec -it ansible-container /bin/bash
+root@23fa96265dde:/ansible cat /root/.ssh/id_rsa
 ```
+Now paste it like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-key.gif" alt="Create Key">
+</div>
 
-In semaphore go to KeyStore
-Add new key :
-    -Type : SSH-Key 
-    -Username: root 
-    -Passphrase : None
-    - Copy paste private key
+Create the inventory like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-inv.gif" alt="Create Inventory">
+</div>
 
+Create the environment like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-env.gif" alt="Create Env">
+</div>
 
-### 2) Create Inventory
+Create the task like the GIF shows:
+<div align="center">
+    <img src="readme-utils/semaphore-images/create-task.gif" alt="Create task">
+</div>
 
-Go to Inventory section and create Inventory :
-    - UserCrendtials : Select the Key imported at previous step
-    - type : Static yaml -> copy paste content of static.yml
+Now run the task. This will be the expected result:
+<div align="center">
+    <img src="readme-utils/semaphore-images/succesful-run.png" alt="Succesful task">
+</div>
 
-### 3) Create Repo
-
-Go to Repository section and create repo
-    - Branche : main
-    - Access-Key : None 
-
-### 4) Create Task 
-
-Go to Tasks section and create task , specify the inventory , repo created previsouly and add the playbook you want to run 
-
-### 5) Execute Task 
-
-
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
