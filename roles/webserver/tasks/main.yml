@@ -8,7 +8,7 @@
 
 - name: Copy reddy executable
   ansible.builtin.copy:
-    src: ./reddy/target/debug/reddy
+    src: /reddy/executable/reddy
     dest: /etc/reddy/reddy
     mode: '0777'
 

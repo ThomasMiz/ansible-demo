@@ -2,6 +2,18 @@ version: '3'
 
 services:
   
+  rust-container:
+    build:
+      context: ./docker-containers/rust-container
+      dockerfile: Dockerfile
+    privileged: true
+    networks:
+      - common
+    tty: true
+    container_name: rust-container
+    volumes:
+      - webserver-executable:/reddy/executable
+  
   ansible-container:
     build:
       context: ./docker-containers/ansible-container
@@ -11,9 +23,12 @@ services:
       - common
     tty: true
     container_name: ansible-container
+    depends_on:
+      - rust-container
     volumes:
       - .:/ansible
       - ssh-keys:/root/.ssh
+      - webserver-executable:/reddy/executable
 
   ubuntu-container1:
     build:
@@ -62,20 +77,24 @@ services:
     container_name: loadbalancer-container4
     volumes:
       - ssh-keys:/root/.ssh
-  mysql:
-    image: mysql:8.0
-    hostname: mysql
+  
+  # https://docs.semui.co/administration-guide/installation#docker
+  postgres:
+    restart: unless-stopped
+    image: postgres:14
+    hostname: postgres
+    volumes: 
+     - semaphore-postgres:/var/lib/postgresql/data
+    privileged: true
     networks:
       - common
-    volumes:
-      - semaphore-mysql:/var/lib/mysql
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-      MYSQL_DATABASE: semaphore
-      MYSQL_USER: semaphore
-      MYSQL_PASSWORD: semaphore
-
+     POSTGRES_USER: semaphore
+     POSTGRES_PASSWORD: semaphore
+     POSTGRES_DB: semaphore
+  
   semaphore:
+    restart: unless-stopped
     ports:
       - 3000:3000
     image: semaphoreui/semaphore:latest
@@ -85,22 +104,24 @@ services:
     environment:
       SEMAPHORE_DB_USER: semaphore
       SEMAPHORE_DB_PASS: semaphore
-      SEMAPHORE_DB_HOST: mysql
-      SEMAPHORE_DB_PORT: 3306
-      SEMAPHORE_DB_DIALECT: mysql
+      SEMAPHORE_DB_HOST: postgres
+      SEMAPHORE_DB_PORT: 5432
+      SEMAPHORE_DB_DIALECT: postgres
       SEMAPHORE_DB: semaphore
-      SEMAPHORE_PLAYBOOK_PATH:
-      SEMAPHORE_ADMIN_PASSWORD: changeme
+      SEMAPHORE_PLAYBOOK_PATH: /tmp/semaphore/
+      SEMAPHORE_ADMIN_PASSWORD: admin
       SEMAPHORE_ADMIN_NAME: admin
       SEMAPHORE_ADMIN_EMAIL: admin@localhost
       SEMAPHORE_ADMIN: admin
       SEMAPHORE_ACCESS_KEY_ENCRYPTION: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
+      SEMAPHORE_LDAP_ACTIVATED: 'no'
       TZ: UTC
     depends_on:
-      - mysql # for postgres, change to: postgres
+      - postgres
+      - rust-container
     volumes:
       - ssh-keys:/home/semaphore/.ssh
-
+      - webserver-executable:/reddy/executable
 
 networks:
   common:
@@ -108,4 +129,5 @@ networks:
 
 volumes:
   ssh-keys:
-  semaphore-mysql:
+  semaphore-postgres:
+  webserver-executable:
