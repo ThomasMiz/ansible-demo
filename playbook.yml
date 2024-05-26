@@ -47,7 +47,7 @@
         src: ./templates/env.j2
         dest: /etc/reddy/.env
      vars:
-        redis_hostname: ubuntu-container3
+        redis_hostname: redis-server1
   
    - name: Copy systemd service file
      ansible.builtin.copy:

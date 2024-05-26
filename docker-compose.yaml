@@ -30,7 +30,7 @@ services:
       - ssh-keys:/root/.ssh
       - webserver-executable:/reddy/executable
 
-  ubuntu-container1:
+  web-server1:
     build:
       context: ./docker-containers/ubuntu-container
       dockerfile: Dockerfile
@@ -38,11 +38,11 @@ services:
     networks:
       - common
     tty: true
-    container_name: ubuntu-container1
+    container_name: web-server1
     volumes:
       - ssh-keys:/root/.ssh
 
-  ubuntu-container2:
+  web-server2:
     build:
       context: ./docker-containers/ubuntu-container
       dockerfile: Dockerfile
@@ -50,11 +50,11 @@ services:
     networks:
       - common
     tty: true
-    container_name: ubuntu-container2
+    container_name: web-server2
     volumes:
       - ssh-keys:/root/.ssh
   
-  ubuntu-container3:
+  redis-server1:
     build:
       context: ./docker-containers/ubuntu-container
       dockerfile: Dockerfile
@@ -62,11 +62,11 @@ services:
     networks:
       - common
     tty: true
-    container_name: ubuntu-container3
+    container_name: redis-server1
     volumes:
       - ssh-keys:/root/.ssh
 
-  loadbalancer-container4:
+  load-balancer:
     build:
       context: ./docker-containers/ubuntu-container
       dockerfile: Dockerfile
@@ -74,7 +74,7 @@ services:
     networks:
       - common
     tty: true
-    container_name: loadbalancer-container4
+    container_name: load-balancer
     volumes:
       - ssh-keys:/root/.ssh
   

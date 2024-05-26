@@ -1,4 +1,4 @@
 ---
 # defaults file for webserver
 
-redis_hostname: ubuntu-container3
+redis_hostname: redis-server1

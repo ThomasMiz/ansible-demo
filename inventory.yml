@@ -5,17 +5,17 @@
 
 all:
   hosts:
-    ubuntu-container1:
-      ansible_host: ubuntu-container1
+    web-server1:
+      ansible_host: web-server1
 
-    ubuntu-container2:
-      ansible_host: ubuntu-container2
+    web-server2:
+      ansible_host: web-server2
 
-    ubuntu-container3:
-      ansible_host: ubuntu-container3
+    redis-server1:
+      ansible_host: redis-server1
     
-    loadbalancer-container4:
-      ansible_host: loadbalancer-container4
+    load-balancer:
+      ansible_host: load-balancer
 
   children:
   
@@ -24,19 +24,19 @@ all:
 
       # List hosts belonging to the webserver group
       hosts:
-        ubuntu-container1:
-        ubuntu-container2:
+        web-server1:
+        web-server2:
       
     # Subgroup for Redis servers
     rediserver:
       
       # List hosts belonging to the redis group
       hosts:
-        ubuntu-container3:
+        redis-server1:
     
     # Subgroup for nginx loadbalancer
     loadbalancer:
       
       # List hosts belonging to the loadbalancer group
       hosts:
-        loadbalancer-container4:
+        load-balancer:
