@@ -32,6 +32,8 @@
     - [Host infomation](#host-infomation)
     - [Variables](#variables)
     - [Logical subgroups](#logical-subgroups)
+- [Playbook](#playbook)
+  - [How does a module run in the target node](#how-does-a-module-run-in-the-target-node)
 - [Jinja 2 templates](#jinja-2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
@@ -108,6 +110,28 @@ In this section, we will explain the structure and purpose of the Ansible invent
   - The `loadbalancer` group contains hosts related to load balancers.
   - Hosts in this group:
     - `load-balancer`
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Playbook[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#playbook) 
+
+Playbooks define automation routines in a declarative manner. They specify the desired state that the target needs to achieve for a given task and are written in YAML format.
+
+A playbook consists of one or more plays listed in order. Each play contributes to the overall goal of the playbook by executing one or more tasks. Each task invokes an Ansible module, which is a functional unit within Ansible used to enact changes in the system. Essentially, modules enforce the desired state on a remote node.
+
+At a minimum, each play defines:
+
+- The managed nodes to be targeted using a pattern.
+- One task to be executed.
+
+### How does a module run in the target node
+<div align="center">
+    <img src="readme-utils/playbooks/module.png" alt="module" width="738">
+</div>
+
+The control node establishes an SSH connection with a remote node. Following this, the control node transfers the module to the remote node. To execute the module, the control node dispatches specific arguments to the copied module. Subsequently, the module operates on the remote node, and the resulting output is captured and returned to the control node. Executing any playbook or ad-hoc Ansible command will display this output.
+
+While not all modules follow this exact process, it provides a helpful insight into the underlying operations.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
