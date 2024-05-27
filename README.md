@@ -29,6 +29,8 @@
     - [Variables](#variables)
     - [Logical subgroups](#logical-subgroups)
 - [Jinja 2 templates](#jinja-2-templates)
+  - [Templating process](#templating-process)
+  - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
 - [Semaphore UI ](#semaphore-ui-)
 - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 
@@ -94,7 +96,70 @@ Ansible uses Jinja 2 templating to enable dynamic expressions and access variabl
 Usually templates are stores in the ```templates``` module. For example, you can create a template for a configuration file, then deploy that configuration file to multiple environments and supply the correct data (IP Address, hostname, version) for each environment.
 
 All templating happens on the ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja 2 is only required in the control node). It also limits the amount of data Anislbe passes to the target machine.
-It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target
+It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target.
+
+### Templating process
+
+The image illustrates the process of templating in Ansible using Jinja2:
+
+<div align="center">
+    <img src="readme-utils/jinja2/jinja-template.png" alt="Semaphore Login">
+</div>
+
+1. **Template**: The initial template file, typically stored in the `templates` directory.
+2. **J2 Engine**: The Jinja2 templating engine processes the template file on the Ansible control node.
+3. **Rendered Template**: The processed template with all variables and expressions evaluated and replaced.
+4. **Copy**: The rendered template is then copied to the target nodes (e.g., Node 1 and Node 2) for execution.
+
+### Usage of Jinja2 templates in this project
+
+Below is an example of how Jinja2 is used to dynamically add web servers in the NGINX configuration file. This example demonstrates how you can use a Jinja2 template to iterate over a group of web servers and configure them for load balancing. This aproach allows to add new web servers without changing the templates, it is not necessary to know the server's IPs, nor how many of them are being used:
+
+```jinja
+upstream app_servers {
+    {% for server in groups['webserver'] %}
+    server {{ hostvars[server]['ansible_host'] }}:3000 weight=1;
+    {% endfor %}
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://app_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        add_header X-Backend-Server $upstream_addr;
+    }
+}
+```
+
+In this template:
+
+- In the `upstream app_servers` block servers are dynamically added from the `webserver` group.
+- The `for` loop iterates over each server in the `webserver` group.
+- `hostvars[server]['ansible_host']` is used to get the IP address of each server.
+- The resulting configuration sets up load balancing for the NGINX server with the dynamically generated list of backend servers.
+
+Jinja2 template is also used to configure the `REDIS_HOST` environment variable for a web server. This template is part of a larger Ansible task that sets up the environment for a web server:
+
+```jinja
+REDIS_HOST=redis://{{redis_hostname}}:6379
+```
+
+The Ansible playbook has the following task: 
+
+```
+- name: Create .env file
+      ansible.builtin.template:
+        src: ./templates/env.j2
+        dest: /etc/reddy/.env
+      vars:
+        redis_hostname: redis-server1
+```
+
+When the task runs, Ansible processes the `env.j2` template and replaces the `{{ redis_hostname }}` placeholder with `redis-server1`.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
