@@ -21,8 +21,12 @@
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) 
 - [Introduction](#introduction)
 - [Table of contents](#table-of-contents)
-- [Reddy](#reddy)
-- [Docker installation ](#docker-installation-)
+- [Topology](#topology)
+- [Docker installation](#docker-installation)
+  - [Ansible Container (ansible-container)](#ansible-container-ansible-container)
+  - [Semaphore Container (semaphore-container)](#semaphore-container-semaphore-container)
+  - [Rust Container (rust-container)](#rust-container-rust-container)
+  - [The remaining containers](#the-remaining-containers)
 - [Inventory ](#inventory-)
   - [File structure](#file-structure)
     - [Host infomation](#host-infomation)
@@ -34,11 +38,11 @@
 - [Semaphore UI ](#semaphore-ui-)
 - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 
-## Reddy[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#reddy)
+## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
-Reddy is the system we will base our Ansible demonstration on. It consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
+The toppology consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
 
-The system was set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and, ideally, add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (id_rsa.pub) of the Ansible container is present in all containers to ensure seamless connections between them and enable task execution.
+The system was set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and, ideally, add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (`id_rsa.pub`) of the Ansible container is present in the `authorized_keys` file in all containers to ensure seamless connections between them and enable task execution via SSH.
 
 <div align="center">
     <img src="readme-utils/topology.png" alt="Semaphore Login" width="738">
@@ -46,14 +50,29 @@ The system was set up using [Docker Compose](docker-compose.yaml), allowing us t
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Docker installation [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) 
-In the root of the project, run docker compose (this will take a while).
+## Docker installation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) 
+In the root of the project, run docker compose. This will take a while, ~6 minutes.
 
 ```bash
 $ docker-compose up -d
 ```
+With this command, we are bringing up the aforementioned topology.
 
-With this command, we are bringing up the aforementioned topology. However, before demonstrating it, before making any demonstration, we will provide an explanation of some concepts.
+### Ansible Container (ansible-container)
+The [Ansible container's Dockerfile](docker-containers/ansible-container/Dockerfile) only configures Ansible and generates SSH keys. To simplify the demonstration and emphasize Ansible's functionality, a volume has been mounted on all containers at `/root/.ssh`, containing the generated private/public key pair (`id_rsa` and `id_rsa.pub`) along with an authorized_keys file containing the corresponding public key. This setup enables all target containers to allow access to Ansible nodes via SSH. Additionally, both Ansible containers (`ansible-container` and `semaphore-container`) utilize the same keys to communicate with these nodes.
+
+### Semaphore Container (semaphore-container)
+The Semaphore container is responsible for bringing up the necessary user interface to use the application. This container relies on another PostgreSQL container to persist certain information (such as playbook runs, statistics, configurations, etc).
+
+### Rust Container (rust-container)
+In this topology, we can think of the [Rust container](docker-containers/rust-container/Dockerfile) as a pipeline in GitHub Actions or Jenkins. Essentially, it fetches from the [Reddy](https://github.com/ThomasMiz/reddy) repository, compiles the Rust project (required for the topology's webservers), and, via a volume, provides the executable file named `reddy` to the ansible-container and semaphore-contain for use in the playbooks and be able to deploy it.
+
+For instance, if we had opted for AWS instead of Docker, the GitHub Actions pipeline would have employed the checkout action, compiled the project using a Rust action, and delivered the `reddy` executable to the VMs with Ansible using SSH with a specific user.
+
+### The remaining containers
+The remaining containers are [Ubuntu containers](docker-containers/ubuntu-container/Dockerfile) with OpenSSH server installed so that Ansible can connect to them. They will act as the target nodes in our inventory.
+
+ With the explanation of the containers, now we will provide an explanation of some Ansible concepts.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
