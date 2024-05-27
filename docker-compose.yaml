@@ -54,7 +54,7 @@ services:
     container_name: web-server2
     volumes:
       - ssh-keys:/root/.ssh
-  
+
   redis-server1:
     build:
       context: ./docker-containers/ubuntu-container
@@ -64,6 +64,18 @@ services:
       - common
     tty: true
     container_name: redis-server1
+    volumes:
+      - ssh-keys:/root/.ssh
+
+  redis-server2:
+    build:
+      context: ./docker-containers/ubuntu-container
+      dockerfile: Dockerfile
+    privileged: true
+    networks:
+      - common
+    tty: true
+    container_name: redis-server2
     volumes:
       - ssh-keys:/root/.ssh
 

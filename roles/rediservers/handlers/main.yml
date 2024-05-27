@@ -1,5 +1,5 @@
 ---
-# handlers file for rediserver
+# handlers file for rediservers
 
 - name: Restart redis-server service
   ansible.builtin.service:

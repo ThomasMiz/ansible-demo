@@ -1,5 +1,5 @@
 ---
-# tasks file for rediserver
+# tasks file for rediservers
 
 - name: Ensure redis-server service is installed
   ansible.builtin.package:

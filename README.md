@@ -77,10 +77,11 @@ In this section, we will explain the structure and purpose of the Ansible invent
     - `web-server1`
     - `web-server2`
 
-- **Rediserver Group**
-  - The `rediserver` group contains hosts related to Redis servers.
+- **Rediservers Group**
+  - The `rediservers` group contains hosts related to Redis servers.
   - Hosts in this group:
     - `redis-server1`
+    - `redis-server2`
 
 - **Loadbalancer Group**
   - The `loadbalancer` group contains hosts related to load balancers.
