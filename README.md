@@ -40,7 +40,9 @@ Reddy is the system we will base our Ansible demonstration on. It consists of an
 
 The system was set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and, ideally, add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (id_rsa.pub) of the Ansible container is present in all containers to ensure seamless connections between them and enable task execution.
 
-(INSERTAR IMAGEN DE LA TOPOLOGIA)
+<div align="center">
+    <img src="readme-utils/topology.png" alt="Semaphore Login" width="738">
+</div>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -104,7 +106,7 @@ It also limits the amount of data Ansible passes to the target machine. Ansible 
 The image illustrates the process of templating in Ansible using Jinja2:
 
 <div align="center">
-    <img src="readme-utils/jinja2/jinja-template.png" alt="Semaphore Login">
+    <img src="readme-utils/jinja2/jinja-template.png" alt="Semaphore Login" width="738">
 </div>
 
 1. **Template**: The initial template file, typically stored in the `templates` directory.
@@ -151,13 +153,13 @@ REDIS_HOST=redis://{{redis_hostname}}:6379
 
 The Ansible playbook has the following task: 
 
-```
+```yml
 - name: Create .env file
-      ansible.builtin.template:
-        src: ./templates/env.j2
-        dest: /etc/reddy/.env
-      vars:
-        redis_hostname: redis-server1
+  ansible.builtin.template:
+    src: ./templates/env.j2
+    dest: /etc/reddy/.env
+  vars:
+    redis_hostname: redis-server1
 ```
 
 When the task runs, Ansible processes the `env.j2` template and replaces the `{{ redis_hostname }}` placeholder with `redis-server1`.
@@ -186,7 +188,7 @@ password = admin
 
 Now create a new project called `ansible-demo` like the GIF shows:
 <div align="center">
-    <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project">
+    <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project" width="738">
 </div>
 
 Create a repository using the link of the repo like the GIF shows:
@@ -221,7 +223,7 @@ Create the task like the GIF shows:
 
 Now run the task. This will be the expected result:
 <div align="center">
-    <img src="readme-utils/semaphore-images/succesful-run.png" alt="Succesful task">
+    <img src="readme-utils/semaphore-images/succesful-run.png" alt="Succesful task" width="738">
 </div>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
