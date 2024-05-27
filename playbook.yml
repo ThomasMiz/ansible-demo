@@ -47,7 +47,6 @@
         dest: /etc/reddy/.env
      vars:
         redis_hostname: redis-server1
-        instance_name: pedro
   
    - name: Copy systemd service file
      ansible.builtin.copy:
