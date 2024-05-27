@@ -27,7 +27,7 @@
   - [Semaphore Container (semaphore-container)](#semaphore-container-semaphore-container)
   - [Rust Container (rust-container)](#rust-container-rust-container)
   - [The remaining containers](#the-remaining-containers)
-- [Inventory ](#inventory-)
+- [Inventory](#inventory)
   - [File structure](#file-structure)
     - [Host infomation](#host-infomation)
     - [Variables](#variables)
@@ -35,8 +35,8 @@
 - [Jinja 2 templates](#jinja-2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
-- [Semaphore UI ](#semaphore-ui-)
-- [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
+- [Semaphore UI](#semaphore-ui)
+  - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
@@ -76,7 +76,7 @@ The remaining containers are [Ubuntu containers](docker-containers/ubuntu-contai
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Inventory [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
+## Inventory[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
 In this section, we will explain the structure and purpose of the Ansible inventory file used in the project. An Ansible inventory file is a YAML or INI file that defines the hosts and groups of hosts upon which Ansible commands, modules, and playbooks operate. The inventory file for this project can be found [here](inventory.yml).
 
 ### File structure
@@ -111,7 +111,7 @@ In this section, we will explain the structure and purpose of the Ansible invent
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Jinja 2 templates
+## Jinja 2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
 
 Ansible uses Jinja 2 templating to enable dynamic expressions and access variables and facts (parametrization).  This avoids hardcoding values inside templates
 
@@ -185,11 +185,11 @@ When the task runs, Ansible processes the `env.j2` template and replaces the `{{
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Semaphore UI [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#semaphore) 
+## Semaphore UI[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#semaphore) 
 
 [Semaphore UI](https://www.semui.co/) is an open-source project offering a responsive web UI for running Ansible playbooks. It simplifies workflow management by allowing users to efficiently execute tasks, organize playbooks, and manage environments, inventories, repositories, and access keys. With its mobile-friendly interface, Semaphore provides flexibility in task management, enabling users to schedule playbook runs, access detailed logs, delegate tasks, and receive notifications.
 
-## Using Semaphore to run a playbook
+### Using Semaphore to run a playbook
 
 Let's run a playbook using Semaphore. The service its listening in http://localhost:3000/. 
 
