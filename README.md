@@ -176,7 +176,7 @@ Let's run a playbook using Semaphore. The service its listening in http://localh
 
 
 <div align="center">
-    <img src="readme-utils/semaphore-images/login.png" alt="Semaphore Login">
+    <img src="readme-utils/semaphore-images/login.png" alt="Semaphore Login" width="738">
 </div>
 
 Login with the following credentials:
@@ -188,7 +188,7 @@ password = admin
 
 Now create a new project called `ansible-demo` like the GIF shows:
 <div align="center">
-    <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project" width="738">
+    <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project">
 </div>
 
 Create a repository using the link of the repo like the GIF shows:
