@@ -179,8 +179,8 @@
         - 172.16.238.240
         - 172.16.238.241
 
-    - name: Allow requests for port 3000 from load balancers only
+    - name: Allow requests for port 8080 from load balancers only
       ansible.builtin.ufw:
         rule: allow
-        port: 3000
+        port: 8080
         from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"

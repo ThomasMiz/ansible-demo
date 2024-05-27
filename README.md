@@ -119,7 +119,7 @@ Below is an example of how Jinja2 is used to dynamically add web servers in the 
 ```jinja
 upstream app_servers {
     {% for server in groups['webserver'] %}
-    server {{ hostvars[server]['ansible_host'] }}:3000 weight=1;
+    server {{ hostvars[server]['ansible_host'] }}:8080 weight=1;
     {% endfor %}
 }
 
