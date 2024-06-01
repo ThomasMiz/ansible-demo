@@ -10,3 +10,9 @@
   hosts: webserver
   roles :
     - webserver
+
+- name: Configure NGINX as a load balancer
+  gather_facts: no
+  hosts: loadbalancer
+  roles:
+    - nginx

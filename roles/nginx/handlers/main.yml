@@ -1,2 +1,13 @@
 ---
 # handlers file for nginx
+
+- name: start nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
