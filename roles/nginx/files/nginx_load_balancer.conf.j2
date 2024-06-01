@@ -1,0 +1,17 @@
+upstream app_servers {
+    {% for server in groups['webserver'] %}
+    server {{ hostvars[server]['ansible_host'] }}:8080 weight=1;
+    {% endfor %}
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://app_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        add_header X-Backend-Server $upstream_addr;
+    }
+}
