@@ -39,6 +39,7 @@
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
+- [Running Ansible through the terminal](#running-ansible-through-the-terminal)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
@@ -264,7 +265,7 @@ And now we can enter this key into Semaphore:
 - Create a new key with the button on the top-right.
 - Name the key `ssh-key`.
 - On _Key Type_, select _SSH Key_. This will make more options appear.
-- Leaves the username nad passphrase blank.
+- Enter `root` as the username, but leave the passphrase blank.
 - Copy and paste the container's key into the _Private Key_ textbox.
 
 With that done, let's set up the Ansible inventory for Semaphore:
@@ -313,3 +314,26 @@ The result should look something like this:
 </div>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Running Ansible through the terminal[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#ansible-terminal) 
+Another, less-straightforward way to run Ansible is to use the Ansible CLI commands. In this section, we will cover how to get into the Ansible controller container and run playbooks through the terminal.
+
+First, we need to get a terminal operating inside `ansible-container`. We can do this by running the following docker command:
+```bash
+$ docker exec -it ansible-container /bin/bash
+root@c02102bd917f:/ansible#
+```
+
+Now that we're inside the container, we can execute Ansible commands. We're interested in running playbooks, so we'll use `ansible-playbook`. Here's the syntax:
+
+```
+ansible-playbook -i <inventory_file> <playbook_file>
+```
+
+If we inspect the files in this container, we'll find that this project's `inventory.yml` and `playbook.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
+
+```bash
+$ ansible-playbook -i inventory.yml playbook.yml
+```
+
+Once Ansible is done configuring our hosts, we'll get a summary on what's changed. Since playbooks are idempotent, you don't have to worry about running a playbook multiple times.
