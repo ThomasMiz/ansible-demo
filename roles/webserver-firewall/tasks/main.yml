@@ -1,0 +1,35 @@
+---
+- name: Install UFW
+  ansible.builtin.package:
+    name: ufw
+    state: present
+
+- name: Gather facts from load-balancer
+  ansible.builtin.setup:
+    gather_subset: all
+  delegate_to: load-balancer
+  run_once: true
+  register: load_balancer_facts
+
+- name: Start UFW service
+  ansible.builtin.service:
+    name: ufw
+    state: started
+
+- name: Block everything and enable UFW
+  community.general.ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow SSH from specified hosts to webserver
+  ansible.builtin.ufw:
+    rule: allow
+    port: ssh
+    from_ip: "{{ item }}"
+  loop: "{{ allowed_ssh_ips }}"
+
+- name: Allow requests for port 8080 from load balancer only
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ allowed_app_port }}"
+    from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"

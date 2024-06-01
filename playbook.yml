@@ -2,7 +2,6 @@
 - name: Start the redis instance
   gather_facts: no
   hosts: rediservers
-  
   tasks:
 
    - name: Ensure redis-server service is installed
@@ -126,7 +125,7 @@
         state: enabled
         policy: deny
 
-    - name: Allow SSH from specified host to loadbalancer (ansible-container and semaphore-container)
+    - name: Allow SSH from specified host to nginx loadbalancer (ansible-container and semaphore-container)
       ansible.builtin.ufw:
         rule: allow
         port: ssh
@@ -135,7 +134,7 @@
         - 172.16.238.240
         - 172.16.238.241
 
-    - name: Allow HTTP and HTTPS from loadbalancer
+    - name: Allow HTTP and HTTPS from nginx loadbalancer
       ansible.builtin.ufw:
         rule: allow
         port: "{{ item }}"
@@ -144,6 +143,7 @@
         - https
 
 - name: Define firewall rules for rust servers
+  gather_facts: no
   hosts: webserver
   tasks:
     - name: Install UFW
@@ -177,7 +177,7 @@
         - 172.16.238.240
         - 172.16.238.241
 
-    - name: Allow requests for port 8080 from load balancers only
+    - name: Allow requests for port 8080 from load balancer only
       ansible.builtin.ufw:
         rule: allow
         port: 8080

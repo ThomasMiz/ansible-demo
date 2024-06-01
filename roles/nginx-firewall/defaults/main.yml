@@ -1,0 +1,9 @@
+---
+# ansible-container and semaphore-container ips
+allowed_ssh_ips:
+  - 172.16.238.240
+  - 172.16.238.241
+
+allowed_http_ports:
+  - http
+  - https

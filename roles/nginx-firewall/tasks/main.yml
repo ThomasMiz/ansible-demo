@@ -1,0 +1,28 @@
+---
+- name: Install UFW
+  ansible.builtin.package:
+    name: ufw
+    state: present
+
+- name: Start UFW service
+  ansible.builtin.service:
+    name: ufw
+    state: started
+
+- name: Block everything and enable UFW
+  community.general.ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow SSH from specified hosts to nginx load balancer
+  ansible.builtin.ufw:
+    rule: allow
+    port: ssh
+    from_ip: "{{ item }}"
+  loop: "{{ allowed_ssh_ips }}"
+
+- name: Allow HTTP and HTTPS from nginx load balancer
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop: "{{ allowed_http_ports }}"

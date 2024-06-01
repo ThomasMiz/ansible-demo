@@ -1,18 +1,20 @@
 ---
-- name: Start the redis instance
+- name: Configure nginx as load balancer
+  gather_facts: no
+  hosts: loadbalancer
+  roles:
+    - nginx-firewall
+    - nginx
+
+- name: Configure the redis instances for the webservers
   gather_facts: no
   hosts: rediservers
   roles :
     - rediservers
 
-- name: Run reddy webserver
+- name: Configure reddy project as webserver
   gather_facts: no
   hosts: webserver
   roles :
+    - webserver-firewall
     - webserver
-
-- name: Configure NGINX as a load balancer
-  gather_facts: no
-  hosts: loadbalancer
-  roles:
-    - nginx
