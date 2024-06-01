@@ -141,8 +141,7 @@ Ansible uses Jinja 2 templating to enable dynamic expressions and access variabl
 
 Usually templates are stores in the ```templates``` module. For example, you can create a template for a configuration file, then deploy that configuration file to multiple environments and supply the correct data (IP Address, hostname, version) for each environment.
 
-All templating happens on the ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja 2 is only required in the control node). It also limits the amount of data Anislbe passes to the target machine.
-It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target.
+All templating happens on the ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja 2 is only required in the control node). It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target.
 
 ### Templating process
 
@@ -233,20 +232,22 @@ Now create a new project called `ansible-demo` as shown:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-project.gif" alt="Create Project">
 </div>
-* Click on _New Project_.
-* Enter `ansible-demo` as the project name.
-* Leave the other fields empty and click _Create_.
+
+- Click on _New Project_.
+- Enter `ansible-demo` as the project name.
+- Leave the other fields empty and click _Create_.
 
 Then create a repository using the link of the git repository:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-repo.gif" alt="Create Repo">
 </div>
-* On the navigation sidebar to the left, go to _Repositories_.
-* Click the _New Repository_ button on the top-right of the screen.
-* Enter `ansible-demo` as the name of the repositroy and enter the URL of this git repository, https://github.com/ThomasMiz/ansible-demo.
-* On _Branch_, specify the _main_ branch.
-* On _Access Key_, select _None_.
-* Click on the _Create_ button.
+
+- On the navigation sidebar to the left, go to _Repositories_.
+- Click the _New Repository_ button on the top-right of the screen.
+- Enter `ansible-demo` as the name of the repositroy and enter the URL of this git repository, https://github.com/ThomasMiz/ansible-demo.
+- On _Branch_, specify the _main_ branch.
+- On _Access Key_, select _None_.
+- Click on the _Create_ button.
 
 Next, we'll create the SSH keys using the private key of the ansible-container. To get this key, we need to open a terminal within the container, then we can find the key at `/root/.ssh/id_rsa`:
 ```bash
@@ -258,47 +259,51 @@ And now we can enter this key into Semaphore:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-key.gif" alt="Create Key">
 </div>
-* Now on the navigation sidebar, go to _Key Store_.
-* Create a new key with the button on the top-right.
-* Name the key `ssh-key`.
-* On _Key Type_, select _SSH Key_. This will make more options appear.
-* Leaves the username nad passphrase blank.
-* Copy and paste the container's key into the _Private Key_ textbox.
+
+- Now on the navigation sidebar, go to _Key Store_.
+- Create a new key with the button on the top-right.
+- Name the key `ssh-key`.
+- On _Key Type_, select _SSH Key_. This will make more options appear.
+- Leaves the username nad passphrase blank.
+- Copy and paste the container's key into the _Private Key_ textbox.
 
 With that done, let's set up the Ansible inventory for Semaphore:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-inv.gif" alt="Create Inventory">
 </div>
-* On the navigation sidebar, go to _Inventory_.
-* Create a new inventory with the button on the top-right.
-* Name the new inventory `inventory`.
-* Set the user credentials to `ssh-key`.
-* Leave _Sudo Credentials_ blank.
-* On _Type_, select _File_. This will make more options appear.
-* On _Repository_, select `ansible-demo`.
-* On _Path to Inventory file_, type `inventory.yml`.
+
+- On the navigation sidebar, go to _Inventory_.
+- Create a new inventory with the button on the top-right.
+- Name the new inventory `inventory`.
+- Set the user credentials to `ssh-key`.
+- Leave _Sudo Credentials_ blank.
+- On _Type_, select _File_. This will make more options appear.
+- On _Repository_, select `ansible-demo`.
+- On _Path to Inventory file_, type `inventory.yml`.
 
 Next up, we'll configure a Semaphore environment:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-env.gif" alt="Create Env">
 </div>
-* On the navigation sidebar, go to _Environment_.
-* Create a new environment with the button on the top-right.
-* Enter `TESTING` as the environment name.
-* Leave the other textboxes unmodified, as our playbooks don't require any additional environment variables.
-* Save the environment.
+
+- On the navigation sidebar, go to _Environment_.
+- Create a new environment with the button on the top-right.
+- Enter `TESTING` as the environment name.
+- Leave the other textboxes unmodified, as our playbooks don't require any additional environment variables.
+- Save the environment.
 
 And create a task for running our playbook:
 <div align="center">
     <img src="readme-utils/semaphore-images/create-task.gif" alt="Create task">
 </div>
-* On then navigation sidebar, go to _Task Templates_.
-* Create a new task template with the button on the top-right.
-* Enter "Run Playbook" as the name of the task
-* Enter `playbook.yml` as the _Playbook Filename_.
-* Select `ansible-demo` as the repository.
-* Select `TESTING` as the environment.
-* Leave all fields blank and press _Create_.
+
+- On then navigation sidebar, go to _Task Templates_.
+- Create a new task template with the button on the top-right.
+- Enter "Run Playbook" as the name of the task
+- Enter `playbook.yml` as the _Playbook Filename_.
+- Select `ansible-demo` as the repository.
+- Select `TESTING` as the environment.
+- Leave all fields blank and press _Create_.
 
 Finally, we can run the task! In _Task Templates_ we will now see our new "Run Playbook" task listed, and on the right we'll see a "RUN" button. This will open a popup allowing us to enter a message or specify some options, but we can skip this and just press "RUN".
 
