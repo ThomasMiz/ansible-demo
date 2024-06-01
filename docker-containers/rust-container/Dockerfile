@@ -7,4 +7,4 @@ RUN apt-get update \
 
 RUN git clone https://github.com/ThomasMiz/reddy.git && mkdir -p /reddy/executable
 WORKDIR /reddy
-RUN cargo build && mv /reddy/target/debug/reddy /reddy/executable/
+RUN cargo build --release && mv /reddy/target/release/reddy /reddy/executable/

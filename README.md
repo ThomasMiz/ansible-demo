@@ -341,3 +341,5 @@ $ ansible-playbook -i inventory.yml playbook.yml
 ```
 
 Once Ansible is done configuring our hosts, we'll get a summary on what's changed. Since playbooks are idempotent, you don't have to worry about running a playbook multiple times.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
