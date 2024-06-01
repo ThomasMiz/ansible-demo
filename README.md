@@ -188,10 +188,12 @@ In this template:
 - `hostvars[server]['ansible_host']` is used to get the IP address of each server.
 - The resulting configuration sets up load balancing for the NGINX server with the dynamically generated list of backend servers.
 
-Jinja2 template is also used to configure the `REDIS_HOST` environment variable for a web server. This template is part of a larger Ansible task that sets up the environment for a web server:
+Jinja2 template is also used to configure the `.env` environment files for the Reddy web servers. This template is part of a larger Ansible task that sets up the environment for each web server:
 
 ```jinja
-REDIS_HOST=redis://{{redis_hostname}}:6379
+LISTEN_AT=0.0.0.0:8080
+INSTANCE_NAME={{ inventory_hostname }}
+REDIS_HOSTS={{ groups['rediservers'] | map('regex_replace', '^(.*)$', 'redis://\\1:6379/') | join(';') }}
 ```
 
 The Ansible playbook has the following task: 
@@ -201,11 +203,13 @@ The Ansible playbook has the following task:
   ansible.builtin.template:
     src: ./templates/env.j2
     dest: /etc/reddy/.env
-  vars:
-    redis_hostname: redis-server1
 ```
 
-When the task runs, Ansible processes the `env.j2` template and replaces the `{{ redis_hostname }}` placeholder with `redis-server1`.
+When the task runs, Ansible processes the `env.j2` template and replaces the `{{ inventory_hostname }}` placeholder with `web-server1` and `web-server2` for the respective hosts, as well as setting the `REDIS_HOSTS` to `redis://redis-server1:6379/;redis://redis-server2:6379/`:
+
+- `groups['rediservers']` returns an array of strings with the inventory names of all the web servers.
+- The `map` function is used to prepend each entry with `redis://` and append `:6379/`.
+- Finally, each entry is `join`-ed, concatenating them together separated by a colon ';'.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
