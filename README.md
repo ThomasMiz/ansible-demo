@@ -134,6 +134,200 @@ The control node establishes an SSH connection with a remote node. Following thi
 
 While not all modules follow this exact process, it provides a helpful insight into the underlying operations.
 
+### Playbooks in this project
+
+To enhance the explanation of the playbooks within this project, let's take a look at some parts of the main [playbook](playbook.yml). 
+
+#### Starting the Redis Instance
+
+This playbook ensures that the Redis server is installed, configured, and running on the target nodes.
+
+```ansible
+- name: Start the redis instance
+  gather_facts: no
+  hosts: rediservers
+  
+  tasks:
+    - name: Ensure redis-server service is installed
+      ansible.builtin.package:
+        name: redis-server
+        state: present
+
+    - name: Copy the redis.conf file into /etc/redis
+      ansible.builtin.copy:
+        src: ./files/redis.conf
+        dest: /etc/redis/redis.conf
+        owner: redis
+        mode: 777
+      notify: Restart redis-server service
+  
+  handlers:
+    - name: Restart redis-server service
+      ansible.builtin.service:
+        name: redis-server
+        state: restarted
+```
+
+This playbook ensures redis-server is installed using the `package` module, copies a pre-defined Redis configuration file to the target nodes and sets the necessary permissions. It triggers a handler to restart the Redis service.
+
+#### Running the Reddy Webserver
+
+This playbook sets up and runs a custom webserver called "Reddy" on the target nodes.
+
+```ansible
+- name: Run reddy webserver
+  gather_facts: no
+  hosts: webserver
+  tasks:
+    - name: Ensure /etc/reddy folder exists
+      ansible.builtin.file:
+        args:
+          dest: /etc/reddy
+          state: directory
+
+    - name: Copy reddy executable
+      ansible.builtin.copy:
+        src: /reddy/executable/reddy
+        dest: /etc/reddy/reddy
+        mode: 777
+
+    - name: Create .env file
+      ansible.builtin.template:
+        src: ./templates/env.j2
+        dest: /etc/reddy/.env
+
+    - name: Copy systemd service file
+      ansible.builtin.copy:
+        src: ./files/reddy.service
+        dest: /etc/systemd/system/reddy.service
+      notify:
+        - Reload systemd
+        - Restart reddy service
+  
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Restart reddy service
+      ansible.builtin.service:
+        name: reddy
+        state: restarted
+```
+
+<u>Tasks</u>:
+1. Ensure `/etc/reddy` folder (directory for the Reddy webserver) exists and then copies the Reddy executable file to the target nodes.
+2. Create .env file using a template
+3. Copy systemd service file: Copies a systemd service file for managing the Reddy webserver and notifies handlers to reload systemd and restart the service.
+
+<u>Handlers</u>:
+- Reload systemd: Reloads the systemd configuration to apply the new service file.
+- Restart reddy service: Restarts the Reddy service to ensure it uses the latest configuration.
+
+#### Configuring Nginx as a Load Balancer
+
+This playbook installs and configures Nginx to function as a load balancer.
+
+``` ansible
+- name: Config nginx as a load balancer
+  gather_facts: no
+  hosts: loadbalancer
+  tasks:
+    - name: install web service
+      ansible.builtin.package:
+        name: nginx
+        state: present
+        update_cache: yes
+      notify: start nginx
+
+    - name: delete default config
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: reload nginx
+
+    - name: Configure NGINX
+      ansible.builtin.template:
+        src: templates/nginx_load_balancer.conf.j2
+        dest: /etc/nginx/sites-available/load_balancer.conf
+      notify: reload nginx
+
+    - name: Enable NGINX loadbalancer site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/load_balancer.conf
+        dest: /etc/nginx/sites-enabled/load_balancer.conf
+        state: link
+      notify: reload nginx
+
+  handlers:
+    - name: start nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+```
+
+This playbook installs `Nginx` on the target nodes, then deletes the default configuration file, then copies the correct configuration file and finaly cretes the symbolic link to enable the new configuration. The handlers are in charge of starting and reloading the `Nginx` service. 
+
+#### Firewall configuration
+
+All the target nodes start an UFW firewall that denies everithing by default, all the target nodes allow ssh connections from the ansible manager node and from the semaphore node. The IPs of this last two node are fixed an known. 
+
+```
+ - name: Start UFW service
+      ansible.builtin.service:
+        name: ufw
+        state: started
+
+    - name: Block everything and enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: deny
+
+    - name: Allow SSH from specified host to webserver (ansible-container and semaphore-container)
+      ansible.builtin.ufw:
+        rule: allow
+        port: ssh
+        from_ip: "{{ item }}"
+      loop:
+        - 172.16.238.240
+        - 172.16.238.241
+```
+
+Then different groups of target nodes define their particular firewall rules. 
+
+The load balancer accepts `http` and `https` connections 
+```
+- name: Allow HTTP and HTTPS from loadbalancer
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - http
+        - https
+```
+
+And the Web Servers accept connections only form the load balancer
+
+```
+- name: Gather facts from load-balancer
+      ansible.builtin.setup:
+        gather_subset: all
+      delegate_to: load-balancer
+      run_once: true
+      register: load_balancer_facts
+ - name: Allow requests for port 8080 from load balancers only
+      ansible.builtin.ufw:
+        rule: allow
+        port: 8080
+        from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"
+```
+
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ## Jinja 2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
