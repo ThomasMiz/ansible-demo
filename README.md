@@ -34,6 +34,11 @@
     - [Logical subgroups](#logical-subgroups)
 - [Playbook](#playbook)
   - [How does a module run in the target node](#how-does-a-module-run-in-the-target-node)
+  - [Playbooks in this project](#playbooks-in-this-project)
+    - [Starting the Redis Instance](#starting-the-redis-instance)
+    - [Running the Reddy Webserver](#running-the-reddy-webserver)
+    - [Configuring Nginx as a Load Balancer](#configuring-nginx-as-a-load-balancer)
+    - [Firewall configuration](#firewall-configuration)
 - [Jinja 2 templates](#jinja-2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
@@ -142,7 +147,7 @@ To enhance the explanation of the playbooks within this project, let's take a lo
 
 This playbook ensures that the Redis server is installed, configured, and running on the target nodes.
 
-```ansible
+```yml
 - name: Start the redis instance
   gather_facts: no
   hosts: rediservers
@@ -174,7 +179,7 @@ This playbook ensures redis-server is installed using the `package` module, copi
 
 This playbook sets up and runs a custom webserver called "Reddy" on the target nodes.
 
-```ansible
+```yml
 - name: Run reddy webserver
   gather_facts: no
   hosts: webserver
@@ -228,7 +233,7 @@ This playbook sets up and runs a custom webserver called "Reddy" on the target n
 
 This playbook installs and configures Nginx to function as a load balancer.
 
-``` ansible
+``` yml
 - name: Config nginx as a load balancer
   gather_facts: no
   hosts: loadbalancer
@@ -278,7 +283,7 @@ This playbook installs `Nginx` on the target nodes, then deletes the default con
 
 All the target nodes start an UFW firewall that denies everithing by default, all the target nodes allow ssh connections from the ansible manager node and from the semaphore node. The IPs of this last two node are fixed an known. 
 
-```
+```yml
  - name: Start UFW service
       ansible.builtin.service:
         name: ufw
@@ -302,7 +307,8 @@ All the target nodes start an UFW firewall that denies everithing by default, al
 Then different groups of target nodes define their particular firewall rules. 
 
 The load balancer accepts `http` and `https` connections 
-```
+
+```yml
 - name: Allow HTTP and HTTPS from loadbalancer
       ansible.builtin.ufw:
         rule: allow
@@ -314,7 +320,7 @@ The load balancer accepts `http` and `https` connections
 
 And the Web Servers accept connections only form the load balancer
 
-```
+```yml
 - name: Gather facts from load-balancer
       ansible.builtin.setup:
         gather_subset: all
