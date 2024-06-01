@@ -522,16 +522,22 @@ $ docker exec -it ansible-container /bin/bash
 root@c02102bd917f:/ansible#
 ```
 
-Now that we're inside the container, we can execute Ansible commands. We're interested in running playbooks, so we'll use `ansible-playbook`. Here's the syntax:
+Now that we're inside the container, we can execute Ansible commands. Before that, to be sure that Ansible does not issue any warnings about working in a [world-writable directory](https://docs.ansible.com/ansible/latest/reference_appendices/config.html#avoiding-security-risks-with-ansible-cfg-in-the-current-directory), inside the container we will run the following command
 
+```bash
+root@c02102bd917f:/ansible# chmod o-w .
 ```
-ansible-playbook -i <inventory_file> <playbook_file>
+
+Now that we've done that, we're interested in running playbooks, so we'll use `ansible-playbook`. Here's the syntax:
+
+``` bash
+$ ansible-playbook -i <inventory_file> <playbook_file>
 ```
 
 If we inspect the files in this container, we'll find that this project's `inventory.yml` and `playbook.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
 
 ```bash
-$ ansible-playbook -i inventory.yml playbook.yml
+root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook.yml
 ```
 
 Once Ansible is done configuring our hosts, we'll get a summary on what's changed. Since playbooks are idempotent, you don't have to worry about running a playbook multiple times.
