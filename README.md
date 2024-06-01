@@ -173,7 +173,7 @@ This playbook ensures that the Redis server is installed, configured, and runnin
         state: restarted
 ```
 
-This playbook ensures redis-server is installed using the `package` module, copies a pre-defined Redis configuration file to the target nodes and sets the necessary permissions. It triggers a handler to restart the Redis service.
+This playbook ensures redis-server is installed using the `package` module, copies a pre-defined Redis configuration file to the target nodes and sets the necessary permissions. It triggers a handler to restart the Redis service using the `notify` label.
 
 #### Running the Reddy Webserver
 
@@ -222,7 +222,7 @@ This playbook sets up and runs a custom webserver called "Reddy" on the target n
 
 <u>Tasks</u>:
 1. Ensure `/etc/reddy` folder (directory for the Reddy webserver) exists and then copies the Reddy executable file to the target nodes.
-2. Create .env file using a template
+2. Create `.env` file using a template
 3. Copy systemd service file: Copies a systemd service file for managing the Reddy webserver and notifies handlers to reload systemd and restart the service.
 
 <u>Handlers</u>:
@@ -277,31 +277,31 @@ This playbook installs and configures Nginx to function as a load balancer.
         state: reloaded
 ```
 
-This playbook installs `Nginx` on the target nodes, then deletes the default configuration file, then copies the correct configuration file and finaly cretes the symbolic link to enable the new configuration. The handlers are in charge of starting and reloading the `Nginx` service. 
+This playbook installs `nginx` on the target nodes, then deletes the default configuration file, then copies the correct configuration file and finaly cretes the symbolic link to enable the new configuration. The handlers are in charge of starting and reloading the `nginx` service. 
 
 #### Firewall configuration
 
-All the target nodes start an UFW firewall that denies everithing by default, all the target nodes allow ssh connections from the ansible manager node and from the semaphore node. The IPs of this last two node are fixed an known. 
+All the target nodes start an UFW firewall that denies everithing by default, all the target nodes allow ssh connections from the ansible manager node (ansible-container) and from the semaphore node (semaphore-container). The IPs of this last two node are fixed an known. 
 
 ```yml
  - name: Start UFW service
-      ansible.builtin.service:
-        name: ufw
-        state: started
+    ansible.builtin.service:
+      name: ufw
+      state: started
 
-    - name: Block everything and enable UFW
-      community.general.ufw:
-        state: enabled
-        policy: deny
+  - name: Block everything and enable UFW
+    community.general.ufw:
+      state: enabled
+      policy: deny
 
-    - name: Allow SSH from specified host to webserver (ansible-container and semaphore-container)
-      ansible.builtin.ufw:
-        rule: allow
-        port: ssh
-        from_ip: "{{ item }}"
-      loop:
-        - 172.16.238.240
-        - 172.16.238.241
+  - name: Allow SSH from specified host to webserver (ansible-container and semaphore-container)
+    ansible.builtin.ufw:
+      rule: allow
+      port: ssh
+      from_ip: "{{ item }}"
+    loop:
+      - 172.16.238.240
+      - 172.16.238.241
 ```
 
 Then different groups of target nodes define their particular firewall rules. 
@@ -310,28 +310,29 @@ The load balancer accepts `http` and `https` connections
 
 ```yml
 - name: Allow HTTP and HTTPS from loadbalancer
-      ansible.builtin.ufw:
-        rule: allow
-        port: "{{ item }}"
-      loop:
-        - http
-        - https
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop:
+    - http
+    - https
 ```
 
-And the Web Servers accept connections only form the load balancer
+And the web servers accept connections only form the load balancer
 
 ```yml
 - name: Gather facts from load-balancer
-      ansible.builtin.setup:
-        gather_subset: all
-      delegate_to: load-balancer
-      run_once: true
-      register: load_balancer_facts
+  ansible.builtin.setup:
+    gather_subset: all
+  delegate_to: load-balancer
+  run_once: true
+  register: load_balancer_facts
+
  - name: Allow requests for port 8080 from load balancers only
-      ansible.builtin.ufw:
-        rule: allow
-        port: 8080
-        from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"
+   ansible.builtin.ufw:
+    rule: allow
+    port: 8080
+    from_ip: "{{ load_balancer_facts.ansible_facts['ansible_default_ipv4']['address'] }}"
 ```
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
