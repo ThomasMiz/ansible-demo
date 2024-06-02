@@ -657,7 +657,7 @@ The Ansible demonstration was initially done with Docker for demonstration purpo
     <img src="readme-utils/improvements/improvements.png" alt="improvements" width="738">
 </div>
 
-As mentioned, the team uses the Reddy project as a web server. Suppose a developer makes changes to the project and pushes them to the remote GitHub repository. How can we automate the deployment process with Ansible so that when a change is pushed, it gets reflected on all our web servers?
+As mentioned, the team uses the Reddy project as a web server template. Suppose a developer makes changes to the project and pushes them to the remote GitHub repository. How can we automate the deployment process with Ansible so that when a change is pushed, it gets reflected on all our web servers?
 
 The idea is to use a GitHub Actions workflow. This workflow will be inside the repository under the path `.github/workflows/deployment.yml`. To simplify the explanation, the workflow, using Actions from the GitHub Actions marketplace, can clone the project into the GitHub runner, compile the Rust project there, take the executable named `reddy`, connect via SSH to an EC2 instance with Ansible (this EC2 instance is in the public subnet of our VPC), and copy the executable to the path `/tmp/reddy`.
 
