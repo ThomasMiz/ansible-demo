@@ -10,7 +10,7 @@
   ansible.builtin.copy:
     src: /reddy/executable/reddy
     dest: /etc/reddy/reddy
-    mode: '0777'
+    mode: 777
 
 - name: Create .env file
   ansible.builtin.template:

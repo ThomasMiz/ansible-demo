@@ -11,5 +11,5 @@
     src: ./files/redis.conf
     dest: /etc/redis/redis.conf
     owner: redis
-    mode: '0777'
+    mode: 777
   notify: Restart redis-server service
