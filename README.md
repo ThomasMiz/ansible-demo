@@ -450,6 +450,7 @@ Roles can be centrally managed and shared through remote registries such as [Ans
 
 In short, hosts will execute specific roles listed under the label `roles`. These roles are located within the `roles` folder.
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ## Semaphore UI[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#semaphore) 
 
