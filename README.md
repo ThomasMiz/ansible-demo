@@ -22,7 +22,8 @@
 - [Introduction](#introduction)
 - [Table of contents](#table-of-contents)
 - [Topology](#topology)
-- [Docker installation](#docker-installation)
+- [Quick start](#quick-start)
+- [About the Docker containers](#about-the-docker-containers)
   - [Ansible Container (ansible-container)](#ansible-container-ansible-container)
   - [Semaphore Container (semaphore-container)](#semaphore-container-semaphore-container)
   - [Rust Container (rust-container)](#rust-container-rust-container)
@@ -45,7 +46,6 @@
 - [Roles](#roles)
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
-- [Running Ansible through the terminal](#running-ansible-through-the-terminal)
 - [How to add a new web server ](#how-to-add-a-new-web-server-)
 - [Improvements](#improvements)
 
@@ -61,13 +61,76 @@ The system was set up using [Docker Compose](docker-compose.yaml), allowing us t
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Docker installation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-installation) 
+## Quick start
+
 In the root of the project, run docker compose. This will take a while, ~6 minutes.
 
 ```bash
 $ docker-compose up -d
 ```
 With this command, we are bringing up the aforementioned topology.
+
+There are two ways to test Ansible, one is with the [UI](#semaphore-ui) (as we will explain later in the readme) while the other, is to utilize Ansible CLI commands. In this section, we'll explain how to access the Ansible controller container and execute playbooks via the terminal.
+
+First, we need to get a terminal operating inside `ansible-container` (see next section for more details). We can do this by running the following docker command:
+```bash
+$ docker exec -it ansible-container /bin/bash
+root@c02102bd917f:/ansible#
+```
+
+Now that we're inside the container, we can execute Ansible commands. Before that, to be sure that Ansible does not issue any warnings about working in a [world-writable directory](https://docs.ansible.com/ansible/latest/reference_appendices/config.html#avoiding-security-risks-with-ansible-cfg-in-the-current-directory), inside the container we will run the following command
+
+```bash
+root@c02102bd917f:/ansible# chmod o-w .
+```
+
+Now that we've done that, we're interested in running playbooks, so we'll use `ansible-playbook` command. Here's the syntax:
+
+``` bash
+root@c02102bd917f:/ansible# ansible-playbook -i <inventory_file> <playbook_file>
+```
+
+or
+
+``` bash
+# This is possible due to ansible.cfg file in the root of the project
+root@c02102bd917f:/ansible# ansible-playbook <playbook_file>
+```
+
+If we inspect the files in this container, we'll find that this project's `inventory.yml`, `playbook.yml` and `playbook-roles.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
+
+```bash
+root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook.yml
+```
+
+or
+
+```bash
+root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
+```
+
+or
+
+``` bash
+# This is possible due to ansible.cfg file in the root of the project that points to inventory.yml
+root@c02102bd917f:/ansible# ansible-playbook playbook.yml
+```
+
+or
+
+``` bash
+# This is possible due to ansible.cfg file in the root of the project that points to inventory.yml
+root@c02102bd917f:/ansible# ansible-playbook playbook-roles.yml
+```
+
+After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
+
+We'll explain the purpose of each part of the command throughout the readme.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+
+## About the Docker containers[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-containers) 
 
 ### Ansible Container (ansible-container)
 The [Ansible container's Dockerfile](docker-containers/ansible-container/Dockerfile) only configures Ansible and generates SSH keys. To simplify the demonstration and emphasize Ansible's functionality, a volume has been mounted on all containers at `/root/.ssh`, containing the generated private/public key pair (`id_rsa` and `id_rsa.pub`) along with an authorized_keys file containing the corresponding public key. This setup enables all target containers to allow access to Ansible nodes via SSH. Additionally, both Ansible containers (`ansible-container` and `semaphore-container`) utilize the same keys to communicate with these nodes.
@@ -555,43 +618,6 @@ The result should look something like this:
 <div align="center">
     <img src="readme-utils/semaphore-images/succesful-run.png" alt="Succesful task" width="738">
 </div>
-
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
-## Running Ansible through the terminal[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#ansible-terminal) 
-Another, less-straightforward way to run Ansible is to use the Ansible CLI commands. In this section, we will cover how to get into the Ansible controller container and run playbooks through the terminal.
-
-First, we need to get a terminal operating inside `ansible-container`. We can do this by running the following docker command:
-```bash
-$ docker exec -it ansible-container /bin/bash
-root@c02102bd917f:/ansible#
-```
-
-Now that we're inside the container, we can execute Ansible commands. Before that, to be sure that Ansible does not issue any warnings about working in a [world-writable directory](https://docs.ansible.com/ansible/latest/reference_appendices/config.html#avoiding-security-risks-with-ansible-cfg-in-the-current-directory), inside the container we will run the following command
-
-```bash
-root@c02102bd917f:/ansible# chmod o-w .
-```
-
-Now that we've done that, we're interested in running playbooks, so we'll use `ansible-playbook`. Here's the syntax:
-
-``` bash
-$ ansible-playbook -i <inventory_file> <playbook_file>
-```
-
-If we inspect the files in this container, we'll find that this project's `inventory.yml`, `playbook.yml` and `playbook-roles.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
-
-```bash
-root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook.yml
-```
-
-or
-
-```bash
-root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
-```
-
-After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
