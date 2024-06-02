@@ -46,6 +46,7 @@
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 - [Running Ansible through the terminal](#running-ansible-through-the-terminal)
+- [Improvements](#improvements)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
@@ -591,3 +592,19 @@ root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
 After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Improvements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#improvements)
+
+The Ansible demonstration was initially done with Docker for demonstration purposes. In real-world scenarios, Docker might not be the best use case, so we decided to dedicate this section to a slightly more realistic use case, but one that would be a bit more complex to present.
+
+<div align="center">
+    <img src="readme-utils/improvements/improvements.png" alt="improvements" width="738">
+</div>
+
+As mentioned, the team uses the Reddy project as a web server. Suppose a developer makes changes to the project and pushes them to the remote GitHub repository. How can we automate the deployment process with Ansible so that when a change is pushed, it gets reflected on all our web servers?
+
+The idea is to use a GitHub Actions workflow. This workflow will be inside the repository under the path `.github/workflows/deployment.yml`. To simplify the explanation, the workflow, using Actions from the GitHub Actions marketplace, can clone the project into the GitHub runner, compile the Rust project there, take the executable named `reddy`, connect via SSH to an EC2 instance with Ansible (this EC2 instance is in the public subnet of our VPC), and copy the executable to the path `/tmp/reddy`.
+
+After copying it, the same GitHub workflow can run either `playbook.yml` or `playbook-roles.yml` in the Ansible node and connect via SSH to our targets grouped under the `webserver` label in the inventory, and this `reddy` executable will be copied, thereby allowing the deployment of the new change.
+
+This way, the deployment is automated, and the web servers are kept up-to-date with the latest version.
