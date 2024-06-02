@@ -677,7 +677,7 @@ and finally run the playbook again, like explained in this [section](#running-an
 
 ## Improvements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#improvements)
 
-The Ansible demonstration was initially done with Docker for demonstration purposes. In real-world scenarios, Docker might not be the best use case, so we decided to dedicate this section to a slightly more realistic use case, but one that would be a bit more complex to present.
+The initial Ansible demonstration utilized Docker for illustrative purposes. However, in practical situations, Docker might not always be the optimal choice. Therefore, we opted to focus this section on a slightly more realistic use case, albeit one that presents a bit more complexity.
 
 <div align="center">
     <img src="readme-utils/improvements/improvements.png" alt="improvements" width="738">
