@@ -70,7 +70,7 @@ $ docker-compose up -d
 ```
 With this command, we are bringing up the aforementioned topology.
 
-There are two ways to test Ansible, one is with the [UI](#semaphore-ui) (as we will explain later in the readme) while the other, is to utilize Ansible CLI commands. In this section, we'll explain how to access the Ansible controller container and execute playbooks via the terminal.
+There are two ways to test Ansible, one is with the [UI](#semaphore-ui) (as we will explain later in the README) while the other, is to utilize Ansible CLI commands. In this section, we'll explain how to access the Ansible controller container and execute playbooks via the terminal.
 
 First, we need to get a terminal operating inside `ansible-container` (see next section for more details). We can do this by running the following docker command:
 ```bash
@@ -125,7 +125,39 @@ root@c02102bd917f:/ansible# ansible-playbook playbook-roles.yml
 
 After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
 
-We'll explain the purpose of each part of the command throughout the readme.
+We'll explain the purpose of each part of the command throughout the README.
+
+Now, to try the project functionallity, run this commands in your host CMD or terminal:
+
+```bash
+# Post a key called "akey"
+> curl -X POST http://localhost:8080/akey -d "This is the value associated with the key akey" -i
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Date: Sun, 02 Jun 2024 02:40:54 GMT
+Content-Length: 2
+Connection: keep-alive
+x-reddy-instance-name: web-server1
+x-redis-instance-index: 0
+X-Backend-Server: 172.16.238.7:8080
+
+OK
+```
+
+```bash
+# Retrieve the key "akey"
+> curl -X GET http://localhost:8080/akey -i
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Date: Sun, 02 Jun 2024 02:41:30 GMT
+Content-Length: 46
+Connection: keep-alive
+x-reddy-instance-name: web-server1
+x-redis-instance-index: 0
+X-Backend-Server: 172.16.238.7:8080
+
+This is the value associated with the key akey
+```
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
