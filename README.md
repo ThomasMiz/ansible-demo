@@ -637,7 +637,13 @@ all:
    [ ... ]
 ```
 
-After doing this changes, just run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
+After doing this changes, run docker-compose to launch the new container:
+
+```bash
+$ docker-compose up -d
+```
+
+and finally run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
 
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
