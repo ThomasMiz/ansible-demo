@@ -18,6 +18,8 @@
 
 [Ansible](https://docs.ansible.com/ansible/latest/index.html) is an open-source IT automation tool that simplifies configuration management, application deployment, and infrastructure orchestration. It uses a simple declarative language based on YAML to describe the desired system configuration and automate complex tasks efficiently. Ansible is highly scalable and can manage everything from small single-server setups to large enterprise environments with thousands of nodes. Being agentless (unlike [Puppet](https://www.puppet.com/)), it doesn't require additional software on the target nodes, making deployment easy and reducing operational complexity.
 
+In this project, we created a simple HTTP API server that accesses a distributed database with the aim of showing how Ansible can be used to easily configure the whole setup, as well as apply future updates.
+
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) 
 - [Introduction ](#introduction-)
 - [Table of contents](#table-of-contents)
@@ -40,7 +42,7 @@
     - [Running the Reddy Webserver](#running-the-reddy-webserver)
     - [Configuring Nginx as a Load Balancer](#configuring-nginx-as-a-load-balancer)
     - [Firewall configuration](#firewall-configuration)
-- [Jinja 2 templates](#jinja-2-templates)
+- [Jinja 2 templates](#jinja2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
 - [Roles](#roles)
@@ -51,19 +53,21 @@
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
-The toppology consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers store/retrieve a key in [Redis](https://redis.io/), and if it exists, return the associated value for that key. All of this is done using HTTP requests.
+The topology consists of an [NGINX](https://nginx.org/en/) acting as a load balancer for two [Rust](https://www.rust-lang.org/)-based web servers. These servers receive HTTP GET or POST requests which are translated into retrieving or storing a key-value pair in a [Redis](https://redis.io/) instance, basically acting as an HTTP wrapper around Redis, while also applying manual sharding by accessing a different Redis instance based on the key.
 
-The system was set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and, ideally, add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (`id_rsa.pub`) of the Ansible container is present in the `authorized_keys` file in all containers to ensure seamless connections between them and enable task execution via SSH.
+The system is set up using [Docker Compose](docker-compose.yaml), allowing us to conduct local testing and add new containers for configuration with Ansible as needed. Each of the squares would represent a [Docker container](docker-containers). All containers belong to the same network, and the public key (`id_rsa.pub`) of the Ansible container is present in the `authorized_keys` file in all containers to ensure seamless connections between them and enable task execution via SSH.
 
 <div align="center">
     <img src="readme-utils/topology.png" alt="Semaphore Login" width="738">
 </div>
 
+Docker is configured to forward incoming TCP connections from port 8080 into the load balancer, which balances HTTP requests between the multiple Rust servers with a round-robin algorithm. Docker will also forward port 3000 towards Semaphore.
+
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ## Quick start [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#quick-start) 
 
-In the root of the project, run docker compose. This will take a while, ~6 minutes.
+In the root of the project, run docker compose. This will take a while, possibly 5 to 10 minutes.
 
 ```bash
 $ docker-compose up -d
@@ -87,14 +91,14 @@ root@c02102bd917f:/ansible# chmod o-w .
 Now that we've done that, we're interested in running playbooks, so we'll use `ansible-playbook` command. Here's the syntax:
 
 ``` bash
-root@c02102bd917f:/ansible# ansible-playbook -i <inventory_file> <playbook_file>
+ansible-playbook -i <inventory_file> <playbook_file>
 ```
 
 or
 
 ``` bash
 # This is possible due to ansible.cfg file in the root of the project
-root@c02102bd917f:/ansible# ansible-playbook <playbook_file>
+ansible-playbook <playbook_file>
 ```
 
 If we inspect the files in this container, we'll find that this project's `inventory.yml`, `playbook.yml` and `playbook-roles.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
@@ -103,75 +107,74 @@ If we inspect the files in this container, we'll find that this project's `inven
 root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook.yml
 ```
 
-or
+Or alternatively, we could also use the _roles-based_ playbook:
 
 ```bash
 root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
 ```
 
-or
+Or we could also execute these same two commands but without explicitly specifying an inventory, in which case Ansible will look for an `inventory.yml` file within the project's directory, as specified in the `ansible.cfg` configuration file:
 
 ``` bash
 # This is possible due to ansible.cfg file in the root of the project that points to inventory.yml
 root@c02102bd917f:/ansible# ansible-playbook playbook.yml
 ```
 
-or
-
 ``` bash
 # This is possible due to ansible.cfg file in the root of the project that points to inventory.yml
 root@c02102bd917f:/ansible# ansible-playbook playbook-roles.yml
 ```
 
-After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
+Once Ansible is done configuring of our hosts, we'll receive a summary detailing the changes made. Since both of these playbooks are identical, running any of them yields the same results. And since playbooks are idempotent, they can also both be run multiple times.
 
 We'll explain the purpose of each part of the command throughout the README.
 
-Now, to try the project functionallity, run this commands in your host CMD or terminal:
+Now, let's try this project's functionality. With the already-configured containers running in the background, open a new terminal and run the following command to set a key to a value:
 
 ```bash
-# Post a key called "akey"
-> curl -X POST http://localhost:8080/akey -d "This is the value associated with the key akey" -i
+$ curl -X POST http://localhost:8080/akey -d "This is the value associated with the key akey" -i
 HTTP/1.1 200 OK
 Server: nginx/1.24.0 (Ubuntu)
-Date: Sun, 02 Jun 2024 02:40:54 GMT
+Date: Sun, 02 Jun 2024 14:58:24 GMT
 Content-Length: 2
 Connection: keep-alive
 x-reddy-instance-name: web-server1
 x-redis-instance-index: 0
-X-Backend-Server: 172.16.238.7:8080
+X-Backend-Server: 172.16.238.4:8080
 
 OK
 ```
 
+This `curl` command uses an HTTP POST to set the key to the desired value. We can now read this key's value with an HTTP GET like so:
+
 ```bash
-# Retrieve the key "akey"
-> curl -X GET http://localhost:8080/akey -i
+$ curl http://localhost:8080/akey -i
 HTTP/1.1 200 OK
 Server: nginx/1.24.0 (Ubuntu)
-Date: Sun, 02 Jun 2024 02:41:30 GMT
+Date: Sun, 02 Jun 2024 14:58:42 GMT
 Content-Length: 46
 Connection: keep-alive
-x-reddy-instance-name: web-server1
+x-reddy-instance-name: web-server2
 x-redis-instance-index: 0
-X-Backend-Server: 172.16.238.7:8080
+X-Backend-Server: 172.16.238.6:8080
 
 This is the value associated with the key akey
 ```
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+If you pay attention to the HTTP headers, you will notice that the `X-Reddy-Instance-Name` header indicates the name of the Rust server that handled the request, and the `X-Redis-Instance-Index` header indicates the index of the Redis instance that stores the key. Since both requests used the same key, they both went to the same Redis instance. However, since the load balancer uses a round-robin algorithm, these requests passed through different Rust servers.
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ## About the Docker containers[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#docker-containers) 
 
 ### Ansible Container (ansible-container)
-The [Ansible container's Dockerfile](docker-containers/ansible-container/Dockerfile) only configures Ansible and generates SSH keys. To simplify the demonstration and emphasize Ansible's functionality, a volume has been mounted on all containers at `/root/.ssh`, containing the generated private/public key pair (`id_rsa` and `id_rsa.pub`) along with an authorized_keys file containing the corresponding public key. This setup enables all target containers to allow access to Ansible nodes via SSH. Additionally, both Ansible containers (`ansible-container` and `semaphore-container`) utilize the same keys to communicate with these nodes.
+The [Ansible container's Dockerfile](docker-containers/ansible-container/Dockerfile) only configures Ansible and generates SSH keys. To simplify the demonstration and emphasize Ansible's functionality, a volume has been mounted on all containers at `/root/.ssh`, containing the generated private/public key pair (`id_rsa` and `id_rsa.pub`) along with an `authorized_keys` file containing the corresponding public key. This setup enables all target containers to allow access to Ansible nodes via SSH. Additionally, both Ansible containers (`ansible-container` and `semaphore-container`) utilize the same keys to communicate with these nodes.
 
 ### Semaphore Container (semaphore-container)
 The Semaphore container is responsible for bringing up the necessary user interface to use the application. This container relies on another PostgreSQL container to persist certain information (such as playbook runs, statistics, configurations, etc).
 
 ### Rust Container (rust-container)
-In this topology, we can think of the [Rust container](docker-containers/rust-container/Dockerfile) as a pipeline in GitHub Actions or Jenkins. Essentially, it fetches from the [Reddy](https://github.com/ThomasMiz/reddy) repository, compiles the Rust project (required for the topology's webservers), and, via a volume, provides the executable file named `reddy` to the ansible-container and semaphore-container for use in the playbooks and be able to deploy it.
+In this topology, we can think of the [Rust container](docker-containers/rust-container/Dockerfile) as a pipeline in GitHub Actions or Jenkins. Essentially, it fetches from the [Reddy](https://github.com/ThomasMiz/reddy) repository, compiles the Rust project (required for the topology's webservers), and, via a volume, provides the executable file named `reddy` to the `ansible-container` and `semaphore-container` for use in the playbooks and to be able to deploy it.
 
 For instance, if we had opted for AWS instead of Docker, the GitHub Actions pipeline would have employed the checkout action, compiled the project using a Rust action, and delivered the `reddy` executable to the VMs with Ansible using SSH with a specific user.
 
@@ -375,11 +378,11 @@ This playbook installs and configures Nginx to function as a load balancer.
         state: reloaded
 ```
 
-This playbook installs `nginx` on the target nodes, then deletes the default configuration file, then copies the correct configuration file and finaly cretes the symbolic link to enable the new configuration. The handlers are in charge of starting and reloading the `nginx` service. 
+This playbook installs `nginx` on the target nodes, then deletes the default configuration file, then copies the correct configuration file and finally cretes the symbolic link to enable the new configuration. The handlers are in charge of starting and reloading the `nginx` service. 
 
 #### Firewall configuration
 
-All the target nodes start an UFW firewall that denies everithing by default, all the target nodes allow ssh connections from the ansible manager node (ansible-container) and from the semaphore node (semaphore-container). The IPs of this last two node are fixed an known. 
+All the target nodes start an UFW firewall that denies everything by default, all the target nodes allow SSH connections from the Ansible manager node (`ansible-container`) and from the Semaphore node (`semaphore-container`). The IPs of these last two node are fixed and known. 
 
 ```yml
  - name: Start UFW service
@@ -404,7 +407,7 @@ All the target nodes start an UFW firewall that denies everithing by default, al
 
 Then different groups of target nodes define their particular firewall rules. 
 
-The load balancer accepts `http` and `https` connections 
+The load balancer accepts `http` and `https` connections:
 
 ```yml
 - name: Allow HTTP and HTTPS from loadbalancer
@@ -416,7 +419,7 @@ The load balancer accepts `http` and `https` connections
     - https
 ```
 
-And the web servers accept connections only form the load balancer
+While the web servers accept connections only from the load balancer:
 
 ```yml
 - name: Gather facts from load-balancer
@@ -435,13 +438,13 @@ And the web servers accept connections only form the load balancer
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Jinja 2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#jinja-2) 
+## Jinja2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#jinja2) 
 
-Ansible uses Jinja 2 templating to enable dynamic expressions and access variables and facts (parametrization).  This avoids hardcoding values inside templates
+Ansible uses Jinja2 templating to enable dynamic expressions and access variables and facts (parametrization). This avoids hardcoding values inside templates.
 
-Usually templates are stores in the ```templates``` module. For example, you can create a template for a configuration file, then deploy that configuration file to multiple environments and supply the correct data (IP Address, hostname, version) for each environment.
+Templates are usually stored in the `templates` folder. For example, you can create a template for a configuration file, then deploy that configuration file to multiple environments and supply the correct data (IP Address, hostname, version) for each environment.
 
-All templating happens on the ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja 2 is only required in the control node). It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target.
+All templating happens on the Ansible control node before the task is sent and executed on the target machine. This approach minimize the package requirements on the target (Jinja2 is only required in the control node). It also limits the amount of data Ansible passes to the target machine. Ansible parses templates on the control node and passes only the information needed for each task to the target machine, instead of passing all the data on the control node and parsing it on the target.
 
 ### Templating process
 
@@ -458,7 +461,7 @@ The image illustrates the process of templating in Ansible using Jinja2:
 
 ### Usage of Jinja2 templates in this project
 
-Below is an example of how Jinja2 is used to dynamically add web servers in the NGINX configuration file. This example demonstrates how you can use a Jinja2 template to iterate over a group of web servers and configure them for load balancing. This aproach allows to add new web servers without changing the templates, it is not necessary to know the server's IPs, nor how many of them are being used:
+Below is an example of how Jinja2 is used to dynamically add web servers in the Nginx configuration file. This example demonstrates how you can use a Jinja2 template to iterate over a group of web servers and configure them for load balancing. This aproach allows to add new web servers without changing the templates, it is not necessary to know the server's IPs, nor how many of them are being used:
 
 ```jinja
 upstream app_servers {
@@ -485,7 +488,7 @@ In this template:
 - In the `upstream app_servers` block servers are dynamically added from the `webserver` group.
 - The `for` loop iterates over each server in the `webserver` group.
 - `hostvars[server]['ansible_host']` is used to get the IP address of each server.
-- The resulting configuration sets up load balancing for the NGINX server with the dynamically generated list of backend servers.
+- The resulting configuration sets up load balancing for the Nginx server with the dynamically generated list of backend servers.
 
 Jinja2 template is also used to configure the `.env` environment files for the Reddy web servers. This template is part of a larger Ansible task that sets up the environment for each web server:
 
@@ -655,7 +658,7 @@ The result should look something like this:
 
 ## How to add a new web server ![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)
 
-The first step is to have a host to start the web server. Another host can be added to the docker compose like this:
+The first step is to have a host to start the web server. Another host can be added to our `docker-compose.yml` file like by adding:
 
 ```yml
 web-server3:
@@ -671,7 +674,7 @@ web-server3:
     - ssh-keys:/root/.ssh
 ```
 
-Also the `inventory.yaml` needs to be modified to recognize this new host:
+The `inventory.yaml` file also needs to be updated to recognize this new host:
 
 ```yml
 all:
@@ -695,17 +698,15 @@ all:
    [ ... ]
 ```
 
-After doing this changes, run docker-compose to launch the new container:
+After doing these changes, run the `docker-compose` command once more to launch the new container:
 
 ```bash
 $ docker-compose up -d
 ```
 
-and finally run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
-
+And finally run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
 
 ## Improvements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#improvements)
 
