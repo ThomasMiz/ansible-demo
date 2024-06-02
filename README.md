@@ -46,6 +46,7 @@
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 - [Running Ansible through the terminal](#running-ansible-through-the-terminal)
+- [How to add a new web server](#how-to-add-a-new-web-server)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
@@ -589,5 +590,52 @@ root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
 ```
 
 After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## How to add a new web server ![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)
+
+The first step is to have a host to start the web server. Another host can be added to the docker compose like this:
+
+```yml
+web-server3:
+  build:
+    context: ./docker-containers/ubuntu-container
+    dockerfile: Dockerfile
+  privileged: true
+  networks:
+    - common
+  tty: true
+  container_name: web-server3
+  volumes:
+    - ssh-keys:/root/.ssh
+```
+
+Also the `inventory.yaml` needs to be modified to recognize this new host:
+
+```yml
+all:
+  hosts:
+    web-server1:
+      ansible_host: web-server1
+    web-server2:
+      ansible_host: web-server2
+    web-server3:
+      ansible_host: web-server3
+    [ ... ]
+
+ children:
+
+    webserver:
+      hosts:
+        web-server1:
+        web-server2:
+        web-server3:
+
+   [ ... ]
+```
+
+After doing this changes, just run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
+
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
