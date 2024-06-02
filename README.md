@@ -14,15 +14,15 @@
 
 ---
 
-## Introduction
+## Introduction [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction) 
 
 [Ansible](https://docs.ansible.com/ansible/latest/index.html) is an open-source IT automation tool that simplifies configuration management, application deployment, and infrastructure orchestration. It uses a simple declarative language based on YAML to describe the desired system configuration and automate complex tasks efficiently. Ansible is highly scalable and can manage everything from small single-server setups to large enterprise environments with thousands of nodes. Being agentless (unlike [Puppet](https://www.puppet.com/)), it doesn't require additional software on the target nodes, making deployment easy and reducing operational complexity.
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents) 
-- [Introduction](#introduction)
+- [Introduction ](#introduction-)
 - [Table of contents](#table-of-contents)
 - [Topology](#topology)
-- [Quick start](#quick-start)
+- [Quick start ](#quick-start-)
 - [About the Docker containers](#about-the-docker-containers)
   - [Ansible Container (ansible-container)](#ansible-container-ansible-container)
   - [Semaphore Container (semaphore-container)](#semaphore-container-semaphore-container)
@@ -61,7 +61,7 @@ The system was set up using [Docker Compose](docker-compose.yaml), allowing us t
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Quick start
+## Quick start [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#quick-start) 
 
 In the root of the project, run docker compose. This will take a while, ~6 minutes.
 
