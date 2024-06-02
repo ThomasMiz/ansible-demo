@@ -46,6 +46,7 @@
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 - [Running Ansible through the terminal](#running-ansible-through-the-terminal)
+- [How to add a new web server ](#how-to-add-a-new-web-server-)
 - [Improvements](#improvements)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
@@ -593,6 +594,54 @@ After Ansible completes the configuration of our hosts, we'll receive a summary 
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
+## How to add a new web server ![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)
+
+The first step is to have a host to start the web server. Another host can be added to the docker compose like this:
+
+```yml
+web-server3:
+  build:
+    context: ./docker-containers/ubuntu-container
+    dockerfile: Dockerfile
+  privileged: true
+  networks:
+    - common
+  tty: true
+  container_name: web-server3
+  volumes:
+    - ssh-keys:/root/.ssh
+```
+
+Also the `inventory.yaml` needs to be modified to recognize this new host:
+
+```yml
+all:
+  hosts:
+    web-server1:
+      ansible_host: web-server1
+    web-server2:
+      ansible_host: web-server2
+    web-server3:
+      ansible_host: web-server3
+    [ ... ]
+
+ children:
+
+    webserver:
+      hosts:
+        web-server1:
+        web-server2:
+        web-server3:
+
+   [ ... ]
+```
+
+After doing this changes, just run the playbook again, like explained in this [section](#running-ansible-through-the-terminal).
+
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+
 ## Improvements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#improvements)
 
 The Ansible demonstration was initially done with Docker for demonstration purposes. In real-world scenarios, Docker might not be the best use case, so we decided to dedicate this section to a slightly more realistic use case, but one that would be a bit more complex to present.
@@ -608,3 +657,5 @@ The idea is to use a GitHub Actions workflow. This workflow will be inside the r
 After copying it, the same GitHub workflow can run either `playbook.yml` or `playbook-roles.yml` in the Ansible node and connect via SSH to our targets grouped under the `webserver` label in the inventory, and this `reddy` executable will be copied, thereby allowing the deployment of the new change.
 
 This way, the deployment is automated, and the web servers are kept up-to-date with the latest version.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
