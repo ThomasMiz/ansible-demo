@@ -42,6 +42,7 @@
 - [Jinja 2 templates](#jinja-2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
+- [Roles](#roles)
 - [Semaphore UI](#semaphore-ui)
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 - [Running Ansible through the terminal](#running-ansible-through-the-terminal)
@@ -337,7 +338,7 @@ And the web servers accept connections only form the load balancer
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## Jinja 2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#inventory) 
+## Jinja 2 templates[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#jinja-2) 
 
 Ansible uses Jinja 2 templating to enable dynamic expressions and access variables and facts (parametrization).  This avoids hardcoding values inside templates
 
@@ -413,6 +414,40 @@ When the task runs, Ansible processes the `env.j2` template and replaces the `{{
 - Finally, each entry is `join`-ed, concatenating them together separated by a colon ';'.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## Roles[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roles)
+In the realm of Ansible automation, where previously all tasks and configurations were consolidated within a single monolithic playbook called [playbook.yml](playbook.yml), the advent of roles introduces a paradigm shift towards modularity and organization. Roles represent an opportunity to break down the complexity of playbooks by encapsulating all pertinent information related to a particular task or configuration within its own distinct unit. Roles in Ansible provide a structured and efficient way to reuse and share code between different playbooks. They allow the modularization of code into smaller, specific units, such as tasks, variables, templates, files and other resources necessary for their execution. Additionally, roles may include metadata, handlers, and tests to ensure their robustness and facilitate integration. 
+
+<div align="center">
+    <img src="readme-utils/roles/roles.png" alt="roles" width="738">
+</div>
+
+Roles can be centrally managed and shared through remote registries such as [Ansible Galaxy](https://www.ansible.com/galaxy/), enabling streamlined collaboration and code reuse within the Ansible community. Ultimately, roles enhance playbook organization, provides code modularity, and facilitate efficient automation workflows. This evolution allows for a more structured and manageable approach to automation, where each role contains all the necessary components—tasks, variables, templates, and more—streamlining playbook development and enhancing overall system maintenance. Consequently, modularizing our initial playbook yields a more organized, reusable, and maintainable automation solution, [playbook-roles.yml](playbook-roles.yml).
+
+```yml
+- name: Configure nginx as load balancer
+  gather_facts: no
+  hosts: loadbalancer
+  roles:
+    - nginx-firewall
+    - nginx
+
+- name: Configure the redis instances for the webservers
+  gather_facts: no
+  hosts: rediservers
+  roles:
+    - rediservers
+
+- name: Configure reddy project as webserver
+  gather_facts: no
+  hosts: webserver
+  roles:
+    - webserver-firewall
+    - webserver
+```
+
+In short, hosts will execute specific roles listed under the label `roles`. These roles are located within the `roles` folder.
+
 
 ## Semaphore UI[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#semaphore) 
 
@@ -541,12 +576,18 @@ Now that we've done that, we're interested in running playbooks, so we'll use `a
 $ ansible-playbook -i <inventory_file> <playbook_file>
 ```
 
-If we inspect the files in this container, we'll find that this project's `inventory.yml` and `playbook.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
+If we inspect the files in this container, we'll find that this project's `inventory.yml`, `playbook.yml` and `playbook-roles.yml` can already be found in the root folder, so to run said playbook with said inventory we can simply run:
 
 ```bash
 root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook.yml
 ```
 
-Once Ansible is done configuring our hosts, we'll get a summary on what's changed. Since playbooks are idempotent, you don't have to worry about running a playbook multiple times.
+or
+
+```bash
+root@c02102bd917f:/ansible# ansible-playbook -i inventory.yml playbook-roles.yml
+```
+
+After Ansible completes the configuration of our hosts, we'll receive a summary detailing the changes made. As both playbooks are identical, running them multiple times yields idempotent results.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
