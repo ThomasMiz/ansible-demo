@@ -42,7 +42,7 @@ In this project, we created a simple HTTP API server that accesses a distributed
     - [Running the Reddy Webserver](#running-the-reddy-webserver)
     - [Configuring Nginx as a Load Balancer](#configuring-nginx-as-a-load-balancer)
     - [Firewall configuration](#firewall-configuration)
-- [Jinja 2 templates](#jinja2-templates)
+- [Jinja2 templates](#jinja2-templates)
   - [Templating process](#templating-process)
   - [Usage of Jinja2 templates in this project](#usage-of-jinja2-templates-in-this-project)
 - [Roles](#roles)
@@ -50,6 +50,7 @@ In this project, we created a simple HTTP API server that accesses a distributed
   - [Using Semaphore to run a playbook](#using-semaphore-to-run-a-playbook)
 - [How to add a new web server ](#how-to-add-a-new-web-server-)
 - [Improvements](#improvements)
+- ["To be idempotent, or not to be, that is the question"](#to-be-idempotent-or-not-to-be-that-is-the-question)
 
 ## Topology[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#topology)
 
@@ -723,5 +724,23 @@ The idea is to use a GitHub Actions workflow. This workflow will be inside the r
 After copying it, the same GitHub workflow can run either `playbook.yml` or `playbook-roles.yml` in the Ansible node and connect via SSH to our targets grouped under the `webserver` label in the inventory, and this `reddy` executable will be copied, thereby allowing the deployment of the new change.
 
 This way, the deployment is automated, and the web servers are kept up-to-date with the latest version.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+## "To be idempotent, or not to be, that is the question"[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#working-with-windows)
+
+If you are running this demo on Windows, you will encounter an "issue".
+
+If you run the same playbook (for example, `playbook.yml`) from the `ansible-container` and from the `semaphore-container`, you will notice that the steps to copy the `redis.conf` and `reddy.service` files result in a new state on the target nodes belonging to `webserver` and `rediserver` group. That is, Ansible detects that the `redis.conf` and `reddy.service` files are different and copies them to the corresponding target nodes, changing their state.
+
+How can this be, if both containers use the same repository (`ansible-demo`)?
+
+The issue lies with the operating systems filesystems.
+
+Due to how Windows saves files in its filesystem, all the files needed by the target nodes for configuration (`redis.conf` and `reddy.service`) will have `"\r\n"` as the line ending. This means that when the ansible-container mounts the local repository (ansible-demo), those files will contain that line ending.
+
+In contrast, the `semaphore-container` pulls directly from the `ansible-demo` repository. That is, we are not mounting our local repository as we do for the `ansible-container`. Therefore, the files will be different, and when Ansible compares the existing file on the target nodes with the one in the filesystem, it will detect differences and therefore it will copy the file, resulting in a state change for the target nodes.
+
+*We want to make it clear that this is not an issue with the idempotence of the playbooks, but rather an issue of using two different operating systems for this demonstration.*
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
